@@ -14,11 +14,12 @@ import { LocalStorageCacheService } from '@/app/services/local-storage-cache.ser
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { WelcomePageComponent } from "../_main/welcome-page/welcome-page.component";
+import { ProgressSpinnerComponent } from "../_shared/progress-spinner/progress-spinner.component";
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [ArtistDisplayComponent, AlbumDisplayComponent, PlaylistDisplayComponent, WelcomePageComponent],
+  imports: [ArtistDisplayComponent, AlbumDisplayComponent, PlaylistDisplayComponent, WelcomePageComponent, ProgressSpinnerComponent],
   templateUrl: './main.component.html',
 })
 export class MainComponent implements AfterViewInit, OnDestroy {

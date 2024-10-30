@@ -1,3 +1,8 @@
+<!-- Loading State -->
+@if(isLoading === true) {
+  <app-progress-spinner />
+} @else {
+<!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
     <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30">
@@ -78,3 +83,4 @@
     </div>
   </div>
 </div>
+}

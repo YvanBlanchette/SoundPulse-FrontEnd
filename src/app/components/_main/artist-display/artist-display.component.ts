@@ -1,5 +1,6 @@
 import { MatTableModule } from '@angular/material/table';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';
@@ -8,24 +9,37 @@ import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-respons
 
 //* Component imports
 import { AlbumsSwiperComponent } from "@/app/components/_shared/albums-swiper/albums-swiper.component";
-
+import { ArtistDetailsStoreService } from '@/app/services/stores/artist-details-store.service';
+import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
 
 @Component({
   selector: 'app-artist-display',
   standalone: true,
-  imports: [MatTableModule, AlbumsSwiperComponent],
+  imports: [MatTableModule, AlbumsSwiperComponent, ProgressSpinnerComponent],
   templateUrl: './artist-display.component.html',
   styleUrls: ['./artist-display.component.css']
 })
 
-export class ArtistDisplayComponent {
+export class ArtistDisplayComponent implements OnInit, OnDestroy {
   private _artistDetails: ExtendedArtistResponse | null | undefined = null;
   tracks: any | null | undefined = null;
   albums: AlbumResponse[] | null | undefined = null;
   verified: boolean = true;
   dataSource: Track[] = [];
+  isLoading: boolean = false;
+  private loadingSubscription: Subscription | null = null;
 
-  constructor() { }
+  constructor(private artistDetailsStoreService: ArtistDetailsStoreService) { }
+
+  ngOnInit(): void {
+    this.loadingSubscription = this.artistDetailsStoreService.loading$.subscribe((loading) => {
+      this.isLoading = loading;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.loadingSubscription?.unsubscribe();
+  }
 
   @Input()
   set artistDetails(value: ExtendedArtistResponse | null | undefined) {
