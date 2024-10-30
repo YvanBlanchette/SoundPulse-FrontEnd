@@ -1,26 +1,29 @@
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top brightness-[0.6]">
+    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30">
 
-    <!-- Display header -->
-    <div class="absolute z-10 p-6 h-[230px] flex flex-col justify-end">
-      <!-- Display artist name -->
-      <h1 class="text-8xl font-bold tracking-wider mt-auto">{{ artistDetails?.name }}</h1>
-
-      <!-- Display followers count -->
-      <div class="flex items-center gap-12">
-        <p class="ml-2 font-medium">{{ artistDetails?.followers?.total?.toLocaleString('fr-CA') }} abonnés</p>
-
+    <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
+      <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square rounded mr-6">
+      <div class="flex flex-col gap-1">
         <!-- Display verified badge -->
         @if(verified) {
           <div>
-            <span class="relative">
+            <span class="ml-4 relative">
               <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
               <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
             </span>
             <span class="ml-5 font-medium tracking-wide">Artiste vérifié</span>
           </div>
         }
+        <!-- Display artist name -->
+        <h1 class="text-8xl font-bold tracking-wider mt-auto">{{ artistDetails?.name }}</h1>
+
+        <!-- Display followers count -->
+        <div class="flex items-center gap-12">
+          <p class="ml-2 font-medium">{{ artistDetails?.followers?.total?.toLocaleString('fr-CA') }} abonnés</p>
+
+          
+        </div>
       </div>
     </div>
 
@@ -68,12 +71,6 @@
             <!-- Albums swiper -->
             <div>
               <h2 class="text-2xl font-semibold tracking-wider">Albums</h2>
-              <app-albums-swiper [ArtistAlbums]="artistDetails?.albums"></app-albums-swiper>
-            </div>
-
-            <!-- Playlists swiper -->
-            <div>
-              <h2 class="text-2xl font-semibold tracking-wider">Listes de lecture</h2>
               <app-albums-swiper [ArtistAlbums]="artistDetails?.albums"></app-albums-swiper>
             </div>
           </div>

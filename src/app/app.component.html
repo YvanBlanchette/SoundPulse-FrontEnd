@@ -14,7 +14,7 @@
     <!-- Main content -->
     <mat-sidenav-content class="mat-sidenav-content overflow-hidden" [class.sidenav-open]="sidenav?.opened" [class.sidenav-closed]="!sidenav?.opened">
       <!-- Sidebar toggle button -->
-      <button type="button" (click)="sidenav?.toggle()" class="absolute top-6 left-5 z-50 w-8 h-8 rounded-full text-gray-300 hover:bg-[#1F1F1F] transition-all duration-300">
+      <button type="button" (click)="sidenav?.toggle()" class="absolute top-6 left-4 z-50 w-8 h-8 rounded-full text-gray-300 hover:bg-[#1F1F1F] transition-all duration-300">
         @if(sidenav?.opened) {
           <i class="fa-solid fa-chevron-left text-xl"></i>
         }

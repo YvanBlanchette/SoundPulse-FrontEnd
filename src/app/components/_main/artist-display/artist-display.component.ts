@@ -1,5 +1,5 @@
 import { MatTableModule } from '@angular/material/table';
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';

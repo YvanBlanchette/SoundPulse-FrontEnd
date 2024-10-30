@@ -1,0 +1,45 @@
+:host {
+  table {
+    @apply w-full bg-transparent border-none border-transparent text-white;
+  }
+  
+  th {
+    @apply text-gray-400 text-lg font-medium tracking-wide;
+  }
+
+  td {
+    @apply py-2 text-white text-lg border-none tracking-wide;
+  }
+  
+  tr:has(td) {
+    @apply bg-transparent hover:bg-gray-300/5 border-none;
+  }
+
+  .durationHeader i {
+    @apply ml-2;
+  }
+  
+  
+    /* WebKit */
+    ::-webkit-scrollbar {
+      width: 3px;
+    }
+  
+    ::-webkit-scrollbar-track {
+      background: #1f1f1f00;
+    }
+  
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+    }
+  
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #88888875 #1F1F1F00;
+    }
+  }
