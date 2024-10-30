@@ -1,0 +1,24 @@
+<div class="h-full w-full flex items-center gap-4 p-4 justify-end pe-10">
+  <button 
+    aria-label="Toggle Mute"
+    (click)="isMuted = !isMuted">
+    <i 
+      class="fa-solid" 
+      [class.fa-volume-xmark]="isMuted" 
+      [class.fa-volume-high]="!isMuted" 
+      text-gray-500 
+      hover:text-white>
+    </i>
+  </button>
+  <mat-slider 
+  aria-label="Volume Control"
+  [min]="min" 
+  [max]="max" 
+  [step]="step"
+  name="volume"
+  (change)="setVolume($event)"
+  class="w-[300px]"
+  >
+  <input matSliderThumb [(ngModel)]="value" #slider>
+</mat-slider>
+</div>

@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.bg-soundpulse {
+  @apply hover:bg-gradient-to-br from-[#00C4FF] to-[#F700FD];
+}

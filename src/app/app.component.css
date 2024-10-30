@@ -1,0 +1,23 @@
+.mat-sidenav-container {
+  @apply bg-black h-[calc(100vh-160px)] overflow-hidden;
+}
+
+.mat-sidenav {
+  @apply h-full w-0 bg-[#121213] text-gray-100 p-2 rounded-r-lg transition-all duration-300;
+}
+
+.mat-sidenav.sidenav-open {
+  @apply w-[24%];
+}
+
+.mat-sidenav-content {
+  @apply relative h-full bg-[#121213] text-gray-100 rounded-l-lg transition-all duration-300 overflow-hidden;
+}
+
+.mat-sidenav-content.sidenav-open {
+  @apply ml-[25%];
+}
+
+.mat-drawer-inner-container {
+  overflow: hidden;
+}

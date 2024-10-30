@@ -1,0 +1,51 @@
+<div class="h-full w-full flex flex-col gap-0.5 items-center justify-center">
+  <!-- Audio element -->
+  <audio #audio>
+    <source [src]="track?.preview_url ?? ''" type="audio/mp3">
+  </audio>
+
+  <!-- Player controls -->
+  <div class="w-full flex items-center justify-center gap-x-4">
+    <!-- Previous track button-->
+    <button class="text-gray-400 hover:text-gray-100 transition-all duration-200">
+      <i class="fa-solid fa-backward-step text-xl"></i>
+    </button>
+
+    <!-- Play/pause button -->
+    <button (click)="togglePlay()"
+      class="bg-gray-400 hover:bg-gray-100 transition-all duration-200 text-black rounded-full w-9 h-9 flex items-center justify-center">
+      @if(isPlaying) {
+        <i class="fa-solid fa-pause"></i>
+      } @else {
+        <i class="fa-solid fa-play"></i>
+      }
+    </button>
+
+    <!-- Next track button-->
+    <button class="text-gray-400 hover:text-gray-100 transition-all duration-200">
+      <i class="fa-solid fa-forward-step text-xl"></i>
+    </button>
+  </div>
+
+  <!-- Track progress -->
+  <div class="w-full mx-auto flex items-center justify-center gap-x-4">
+    <div class="text-gray-400">
+      <!-- Track current progress -->
+      <span>{{ formatTime(currentTime) }}</span>
+    </div>
+
+    <!-- Progress bar container -->
+    <div class="w-full cursor-pointer" (click)="seek($event)">
+      <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+    </div>
+
+    <div class="text-gray-400">
+  <!-- Track total length -->
+    @if (track) {
+      <span>{{ formatTime(track.duration_ms / 1000) }}</span>
+    } @else {
+      <span>0:00</span>
+    } 
+  </div>
+  </div>
+</div>

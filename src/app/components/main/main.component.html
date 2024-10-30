@@ -1,0 +1,13 @@
+<div class="w-full h-full">
+  @if(!selectedItem) {
+    <app-welcome-page />
+  } @else { 
+    @if(selectedItem?.type === 'Artiste') {
+      <app-artist-display [artistDetails]="artistDetails" />
+    } @else if (selectedItem?.type === 'Album') {
+      <app-album-display [albumDetails]="albumDetails" />
+    } @else if (selectedItem?.type === 'Liste de lecture') {
+      <app-playlist-display />
+    }
+  }
+</div>
