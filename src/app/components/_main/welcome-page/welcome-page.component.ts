@@ -1,22 +1,25 @@
-import { Component, OnDestroy, AfterViewInit, ViewChild, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { LogoComponent } from "../../_shared/logo/logo.component";
+import { Component, OnDestroy, AfterViewInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+
+//* Component imports
+import { LogoComponent } from "@/app/components/_shared/logo/logo.component";
+
+//* Service imports
 import { ApiService } from '@/app/services/api-service.service';
+
+//* Interface imports
+import { NewAlbums } from '@/app/interfaces/new-albums';
 import { AlbumResponse } from '@/app/interfaces/album-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
-import { Subscription } from 'rxjs';
-import { NewAlbums } from '@/app/interfaces/new-albums';
-import { AlbumsSwiperComponent } from "../../_shared/albums-swiper/albums-swiper.component";
 
 @Component({
   selector: 'app-welcome-page',
   standalone: true,
-  imports: [LogoComponent, AlbumsSwiperComponent],
+  imports: [LogoComponent],
   templateUrl: './welcome-page.component.html',
   styleUrls: ['./welcome-page.component.css'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class WelcomePageComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('swiperContainer') swiperContainer: AlbumsSwiperComponent | null = null;
   newAlbums: AlbumResponse[] | null = null;
   subscription: Subscription | null = null;
 

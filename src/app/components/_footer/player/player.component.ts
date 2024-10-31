@@ -1,74 +1,108 @@
-import { Component, ElementRef, Input, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs';
+//* Module imports
+import { AsyncPipe } from '@angular/common';
+import { Observable, Subscription } from 'rxjs';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 
 //* Service imports
 import { CurrentTrackService } from '@/app/services/current-track.service';
 
-//* Component imports
-import { MatProgressBar } from '@angular/material/progress-bar';
+//* Interface imports
 import { Track } from '@/app/interfaces/track';
 
 @Component({
   selector: 'app-player',
   standalone: true,
-  imports: [MatProgressBar],
+  imports: [MatProgressBar, AsyncPipe],
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.css'],
 })
-  
+
 export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
-  // Track data
-  private _track: Track | null | undefined = undefined;
-
-  // Input properties
-  @Input() set track(value: Track | null | undefined) {
-    // Update track data and reset audio
-    this._track = value;
-    this.resetAudio();
-    this.updateAudioSource(value?.preview_url ?? '');
-  }
-
-  @Input() playbackStatus?: string;
-
-  get track(): Track | null | undefined {
-    return this._track;
-  }
-
-  // Audio element reference
+  //? Audio element reference
   @ViewChild('audio', { static: true }) audioRef!: ElementRef<HTMLAudioElement>;
 
-  // Playback state
+  //? Flag to set if there is a preview URL
+  public hasPreviewUrl = false;
+
+  //? Playback properties
   isPlaying = false;
   progress = 0;
   currentTime = 0;
 
-  // Subscription for volume updates
+  //? Audio properties
+  public audioDuration = 0;
+
+  //? Sanitized preview URL
+  sanitizedUrl!: any;
+
+  //? Subscriptions
   private volumeSubscription!: Subscription;
+  private trackSubscription!: Subscription;
 
-  constructor(private currentTrackService: CurrentTrackService) {}
+  constructor(public currentTrackService: CurrentTrackService, private sanitizer: DomSanitizer) {
+    this.currentTrack$ = this.currentTrackService.currentTrack$;
+  }
 
-  // Lifecycle hooks
+  //? Current track observable
+  public currentTrack$: Observable<Track | null>;
+
+  //? Initialize subscriptions
   ngOnInit(): void {
+    this.initSubscriptions();
+  }
+
+  //? Initialize audio event listeners
+  ngAfterViewInit(): void {
+    this.initAudioEventListeners();
+    const audio = this.audioRef.nativeElement;
+    if (audio) {
+    // Get audio duration on load
+    audio.addEventListener('loadedmetadata', () => {
+      this.audioDuration = audio.duration;
+    });
+  }
+  }
+
+  //? Unsubscribe from subscriptions
+  ngOnDestroy(): void {
+    this.volumeSubscription.unsubscribe();
+    this.trackSubscription.unsubscribe();
+  }
+
+  //? Subscriptions initialization
+  private initSubscriptions(): void {
     // Subscribe to volume updates
     this.volumeSubscription = this.currentTrackService.volume$.subscribe((volume) => {
       this.updateVolume(volume);
     });
+
+    // Subscribe to track updates
+    this.trackSubscription = this.currentTrackService.currentTrack$.subscribe((track) => {
+      // Update preview URL flag and audio source
+      if (track && track.preview_url) {
+        // Set the hasPreviewUrl flag to true
+        this.hasPreviewUrl = true;
+        // Sanitize the preview URL to prevent security issues
+        this.sanitizedUrl = this.sanitizer.bypassSecurityTrustUrl(track.preview_url);
+        // Update the audio source
+        this.updateAudioSource(track.preview_url);
+      } else {
+        // Set the hasPreviewUrl flag to false
+        this.hasPreviewUrl = false;
+        // Reset audio
+        this.resetAudio();
+      }
+    });
   }
 
-  ngAfterViewInit(): void {
-    // Initialize audio event listeners
-    this.initAudioEventListeners();
-
-    // Set the audio source
-    this.updateAudioSource(this.track?.preview_url ?? '');
+  //! Function to get play button disabled state
+  public get isPlayButtonDisabled(): boolean {
+    return !this.hasPreviewUrl;
   }
 
-  ngOnDestroy(): void {
-    // Unsubscribe from volume updates
-    this.volumeSubscription.unsubscribe();
-  }
-
-  // Audio event listeners initialization
+  //! Function to initialize Audio event listeners
   private initAudioEventListeners(): void {
     const audio = this.audioRef.nativeElement;
 
@@ -100,41 +134,41 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Methods
-  /**
-   * Toggle play/pause.
-   */
-  togglePlay(): void {
+  //! Function to toggle play/pause
+  async togglePlay(): Promise<void> {
     try {
       const audio = this.audioRef.nativeElement;
-      if (audio.paused) {
-        audio.play().catch((error) => {
-          console.error('Error playing audio:', error);
-        });
+
+      // If the audio is paused or ended
+      if (audio.paused || audio.ended) {
+        // Play the audio
+        await audio.play();
       } else {
+        // Pause the audio
         audio.pause();
       }
     } catch (error) {
+      // Log the error
       console.error('Error toggling playback:', error);
     }
   }
 
-  /**
-   * Reset audio playback.
-   */
+  //! Function to reset the audio
   resetAudio(): void {
     const audio = this.audioRef.nativeElement;
+    // Pause the audio
     audio.pause();
+    // Set the time to 0
     audio.currentTime = 0;
+    // Change the isPlaying flag to false
     this.isPlaying = false;
+    // Set the progress to 0
     this.progress = 0;
   }
 
-  /**
-   * Seek to a specific time.
-   * @param event MouseEvent
-   */
+  //! Function to seek to a specific time
   seek(event: MouseEvent): void {
+    // Seek to specific time
     const progressBar = event.target as HTMLElement;
     const clickPosition = event.offsetX;
     const totalWidth = progressBar.clientWidth;
@@ -144,48 +178,45 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateProgress();
   }
 
-  /**
-   * Update progress.
-   */
+  //! Function to update the progress bar
   updateProgress(): void {
     const audio = this.audioRef.nativeElement;
-    if (audio) {
+    if (audio && audio.duration !== Infinity && !Number.isNaN(audio.duration)) {
+      // Update progress bar
       this.progress = (audio.currentTime / audio.duration) * 100;
       this.currentTime = audio.currentTime;
     }
   }
 
-  /**
-   * Format time as MM:SS.
-   * @param inputSeconds number
-   * @returns string
-   */
+  //! Function to format duration as MM:SS
   formatTime(inputSeconds: number): string {
+    // Format duration as MM:SS
     const date = new Date(inputSeconds * 1000);
     const minutes = date.getUTCMinutes();
     const seconds = date.getUTCSeconds();
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  /**
-   * Update audio source.
-   * @param src string
-   */
+  //! Function to update the audio source
   private updateAudioSource(src: string | null | undefined): void {
-    const audio = this.audioRef.nativeElement;
-    if (audio) {
-      audio.src = src ?? '';
+    // Reset audio before updating source
+    this.resetAudio();
+    if (src) {
+      const audio = this.audioRef.nativeElement;
+      if (audio) {
+        // Update audio source
+        audio.src = src;
+        // Load audio
+        audio.load();
+      }
     }
   }
 
-
-   /**
-   * Update volume.
-   * @param volume number
-   */
-   private updateVolume(volume: number): void {
+  //! Function to update the volume
+  private updateVolume(volume: number): void {
     const audio = this.audioRef.nativeElement;
     if (audio) {
+      // Update audio volume
       audio.volume = volume;
     }
   }

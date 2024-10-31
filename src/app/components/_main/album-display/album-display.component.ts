@@ -7,15 +7,17 @@ import { AlbumResponse } from '@/app/interfaces/album-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { Track } from '@/app/interfaces/track';
 
+//* Service imports
+import { CurrentTrackService } from '@/app/services/current-track.service';
+
 //* Component imports
-import { AlbumsSwiperComponent } from "@/app/components/_shared/albums-swiper/albums-swiper.component";
 import { AlbumDetailsStoreService } from '@/app/services/stores/album-details-store.service';
 import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
 
 @Component({
   selector: 'app-album-display',
   standalone: true,
-  imports: [MatTableModule, AlbumsSwiperComponent, ProgressSpinnerComponent],
+  imports: [MatTableModule, ProgressSpinnerComponent],
   templateUrl: './album-display.component.html',
   styleUrls: ['./album-display.component.css']
 })
@@ -28,7 +30,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   private loadingSubscription: Subscription | null = null;
 
-  constructor(private albumDetailsStoreService: AlbumDetailsStoreService) { }
+  constructor(private albumDetailsStoreService: AlbumDetailsStoreService, private currentTrackService: CurrentTrackService) { }
 
   ngOnInit(): void {
     this.loadingSubscription = this.albumDetailsStoreService.loading$.subscribe((loading) => {
@@ -53,10 +55,16 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
     return this._albumDetails;
   }
 
-  // Methods
+  //! Function to format tracks duration as MM:SS
   durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  //! Function to handle track click
+  onTrackClick(track: Track): void {
+    this.currentTrackService.selectTrack(track);
+    console.log('Track clicked:', track);
   }
 }

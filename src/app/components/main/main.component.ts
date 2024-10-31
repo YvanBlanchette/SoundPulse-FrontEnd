@@ -33,7 +33,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   subscription: Subscription | null = null;
   
   // Currently selected library item
-  selectedItem: LibraryItem | null = null;
+  selectedItem!: { type: string } | null | undefined;
 
   constructor(
     public selectedLibraryItemService: SelectedLibraryItemService,

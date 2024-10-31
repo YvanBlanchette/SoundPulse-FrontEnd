@@ -31,30 +31,29 @@
     <!-- Display body -->
     <div class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
       <div class="p-6">
-        <div class="grid grid-cols-12 justify-between gap-6">
 
           <!-- Display tracks table -->
-          <div class="col-span-12 lg:col-span-8">
+          <div class="w-full">
             <!-- Tracks table -->
             <table mat-table [dataSource]="tracks">
 
               <!-- Track number column -->
               <ng-container matColumnDef="track_number">
                 <th mat-header-cell *matHeaderCellDef>#</th>
-                <td mat-cell *matCellDef="let track"> {{track.track_number}} </td>
+                <td mat-cell *matCellDef="let track" (click)="onTrackClick(track)"> {{track.track_number}} </td>
               </ng-container>
             
               <!-- Name column -->
               <ng-container matColumnDef="title">
                 <th mat-header-cell *matHeaderCellDef>Titre</th>
-                <td mat-cell *matCellDef="let track" class="py-4"> {{ track.name }} </td>
+                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)"> {{ track.name }} </td>
               </ng-container>
             
               <!-- Duration column -->
               <ng-container matColumnDef="duration">
                 <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
 
-                <td mat-cell *matCellDef="let track" class="py-4"> {{ durationFormatter(track.duration_ms) }} </td>
+                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)"> {{ durationFormatter(track.duration_ms) }} </td>
               </ng-container>
 
               <!-- Options -->
@@ -68,16 +67,6 @@
               <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer"></tr>
             </table>
           </div>
-
-          <!-- Display albums/playlists swipers -->
-          <div class="col-span-12 lg:col-span-4 w-full flex flex-col gap-8">
-
-            <!-- Albums swiper -->
-            <div>
-              <app-albums-swiper [ArtistAlbums]="albumDetails?.otherAlbums"></app-albums-swiper>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

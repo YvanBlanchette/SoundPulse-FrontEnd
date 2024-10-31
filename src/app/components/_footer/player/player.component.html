@@ -1,16 +1,43 @@
-<div class="player-container">
-  <audio #audio controls>
-    <source [src]="track?.preview_url" type="audio/mpeg">
+<div class="flex flex-col items-center justify-center h-full w-full">
+
+  <!-- Audio source -->
+  <audio #audio>
+    <source [src]="sanitizedUrl" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
-  <div class="progress-bar-container">
-    <mat-progress-bar [value]="progress" [bufferValue]="100"></mat-progress-bar>
-    <div class="progress-bar-overlay" (mousedown)="seek($event)">
-      <span>{{ formatTime(currentTime) }} / {{ formatTime(track?.duration_ms ?? 0) }}</span>
-    </div>
+
+  <!-- Player controls -->
+  <div class="flex items-center gap-3">
+
+    <!-- Previous button -->
+    <button class="flex items-center justify-center h-6 w-6 rounded-full bg-gray-300 hover:bg-white transition-all duration-300">
+      <i class="fa-solid fa-backward-step text-sm text-black"></i>
+    </button>
+
+    <!-- Play button -->
+    <button [class.disabled]="isPlayButtonDisabled"  [disabled]="isPlayButtonDisabled"  (click)="togglePlay()">
+      @if(!isPlaying) {
+        <i class="fa-solid fa-circle-play text-4xl text-gray-300 hover:text-white transition-all duration-300 "></i>
+      } @else {
+        <i class="fa-solid fa-circle-pause text-4xl text-gray-300 hover:text-white transition-all duration-300"></i>
+      }
+    </button>
+
+    <!-- Next button -->
+    <button class="flex items-center justify-center h-6 w-6 rounded-full bg-gray-300 hover:bg-white transition-all duration-300">
+      <i class="fa-solid fa-forward-step text-sm text-black "></i>
+    </button>
   </div>
-  <button (click)="togglePlay()">
-    <span *ngIf="!isPlaying">Play</span>
-    <span *ngIf="isPlaying">Pause</span>
-  </button>
+
+  <!-- Progress bar -->
+  <div class="progress-bar-container flex items-center gap-4">
+    <!-- Current time -->
+    {{ formatTime(currentTime) }}
+
+    <!-- Progress bar -->
+    <mat-progress-bar (mousedown)="seek($event)" [value]="progress" [bufferValue]="100"></mat-progress-bar>
+
+    <!-- Duration (of the preview audio) -->
+    {{ formatTime(audioDuration) }}
+  </div>
 </div>

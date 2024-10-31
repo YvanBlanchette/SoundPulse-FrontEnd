@@ -7,15 +7,16 @@ import { Track } from '@/app/interfaces/track';
 
 //* Service imports
 import { CurrentTrackService } from '@/app/services/current-track.service';
+import { LibraryItemComponent } from "../../_sidebar/library-item/library-item.component";
 
 @Component({
   selector: 'app-song-details',
   standalone: true,
   templateUrl: './song-details.component.html',
+  imports: [LibraryItemComponent],
 })
 export class SongDetailsComponent implements OnInit, OnDestroy {
-  @Input()
-  track: Track | null = null;
+  track!: Track | null | undefined;
 
   private destroy$ = new Subject<void>();
   private subscription$: Subscription | null = null;
