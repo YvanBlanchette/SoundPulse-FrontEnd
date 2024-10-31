@@ -1,9 +1,11 @@
-<div class="flex items-center gap-4 p-4">
-  <div>
-    <img [src]="track?.album?.images?.[0]?.url" [alt]="track?.name" class="w-12 h-12 rounded">
-  </div>
-  <div>
-    <h3 class="font-medium text-xl">{{ track?.name }}</h3>
-    <p class="text-xs text-gray-400">{{ track?.artists?.[0]?.name }} - {{ track?.album?.name }}</p>
-  </div>
+<!-- song-details.component.html -->
+<div *ngIf="track">
+  <h2>{{ track?.name }}</h2>
+  <p>Artist: {{ track?.artists?.[0]?.name }}</p>
+  <p>Album: {{ track?.album }}</p>
+  <!-- Display other track details -->
+</div>
+
+<div *ngIf="!track">
+  No track selected
 </div>

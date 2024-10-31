@@ -1,4 +1,4 @@
-import { Component, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { LibraryItem } from '@/app/interfaces/library-item';
 
@@ -36,9 +36,10 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   selectedItem: LibraryItem | null = null;
 
   constructor(
-    private selectedLibraryItemService: SelectedLibraryItemService,
+    public selectedLibraryItemService: SelectedLibraryItemService,
     private localStorageCacheService: LocalStorageCacheService,
     private apiService: ApiService,
+    private cdr: ChangeDetectorRef,
   ) { }
 
   // Lifecycle hook: AfterViewInit
@@ -57,6 +58,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           ).subscribe((artist) => {
             // Update artist and item details
             this.artistDetails = artist;
+              this.cdr.detectChanges(); 
           });
         } 
         //! Load album details
@@ -68,6 +70,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           ).subscribe((album) => {
             // Update album and item details
             this.albumDetails = album;
+              this.cdr.detectChanges(); 
           });
         }
       }

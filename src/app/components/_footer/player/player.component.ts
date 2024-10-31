@@ -1,23 +1,22 @@
-//* Module imports
-import { Component, ElementRef, Input, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 //* Service imports
-import { TrackService } from '@/app/services/track.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 //* Component imports
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { Track } from '@/app/interfaces/track';
-
 
 @Component({
   selector: 'app-player',
   standalone: true,
   imports: [MatProgressBar],
   templateUrl: './player.component.html',
+  styleUrls: ['./player.component.css'],
 })
   
-export class PlayerComponent implements OnInit, AfterViewInit {
+export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   // Track data
   private _track: Track | null | undefined = undefined;
 
@@ -44,21 +43,16 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   currentTime = 0;
 
   // Subscription for volume updates
-  private subscription!: Subscription;
+  private volumeSubscription!: Subscription;
 
-  constructor(private trackService: TrackService) {}
+  constructor(private currentTrackService: CurrentTrackService) {}
 
   // Lifecycle hooks
   ngOnInit(): void {
     // Subscribe to volume updates
-    this.subscription = this.trackService.volume$.subscribe((volume) => {
+    this.volumeSubscription = this.currentTrackService.volume$.subscribe((volume) => {
       this.updateVolume(volume);
     });
-  }
-
-  ngOnDestroy(): void {
-    // Unsubscribe from volume updates
-    this.subscription.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -69,8 +63,13 @@ export class PlayerComponent implements OnInit, AfterViewInit {
     this.updateAudioSource(this.track?.preview_url ?? '');
   }
 
+  ngOnDestroy(): void {
+    // Unsubscribe from volume updates
+    this.volumeSubscription.unsubscribe();
+  }
+
   // Audio event listeners initialization
-  private initAudioEventListeners() {
+  private initAudioEventListeners(): void {
     const audio = this.audioRef.nativeElement;
 
     if (audio) {
@@ -105,11 +104,13 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   /**
    * Toggle play/pause.
    */
-  togglePlay() {
+  togglePlay(): void {
     try {
       const audio = this.audioRef.nativeElement;
       if (audio.paused) {
-        audio.play();
+        audio.play().catch((error) => {
+          console.error('Error playing audio:', error);
+        });
       } else {
         audio.pause();
       }
@@ -121,7 +122,7 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   /**
    * Reset audio playback.
    */
-  resetAudio() {
+  resetAudio(): void {
     const audio = this.audioRef.nativeElement;
     audio.pause();
     audio.currentTime = 0;
@@ -133,12 +134,12 @@ export class PlayerComponent implements OnInit, AfterViewInit {
    * Seek to a specific time.
    * @param event MouseEvent
    */
-  seek(event: MouseEvent) {
-    const audio = this.audioRef.nativeElement;
+  seek(event: MouseEvent): void {
     const progressBar = event.target as HTMLElement;
     const clickPosition = event.offsetX;
     const totalWidth = progressBar.clientWidth;
     const clickRatio = clickPosition / totalWidth;
+    const audio = this.audioRef.nativeElement;
     audio.currentTime = clickRatio * audio.duration;
     this.updateProgress();
   }
@@ -146,10 +147,12 @@ export class PlayerComponent implements OnInit, AfterViewInit {
   /**
    * Update progress.
    */
-  updateProgress() {
+  updateProgress(): void {
     const audio = this.audioRef.nativeElement;
-    this.progress = (audio.currentTime / audio.duration) * 100;
-    this.currentTime = audio.currentTime;
+    if (audio) {
+      this.progress = (audio.currentTime / audio.duration) * 100;
+      this.currentTime = audio.currentTime;
+    }
   }
 
   /**
@@ -168,18 +171,19 @@ export class PlayerComponent implements OnInit, AfterViewInit {
    * Update audio source.
    * @param src string
    */
-  private updateAudioSource(src: string | null | undefined) {
+  private updateAudioSource(src: string | null | undefined): void {
     const audio = this.audioRef.nativeElement;
     if (audio) {
       audio.src = src ?? '';
     }
   }
 
-  /**
+
+   /**
    * Update volume.
    * @param volume number
    */
-  private updateVolume(volume: number) {
+   private updateVolume(volume: number): void {
     const audio = this.audioRef.nativeElement;
     if (audio) {
       audio.volume = volume;

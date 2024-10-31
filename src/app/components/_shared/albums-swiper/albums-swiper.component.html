@@ -1,18 +1,24 @@
-<swiper-container 
+<div class="relative w-full h-full">
+  <!-- Navigation Buttons -->
+  <div class="flex justify-center items-center gap-6 z-50">
+     <button (click)="swiperContainer.swiper.slidePrev()" class=""><i class="fa-solid fa-circle-chevron-left text-xl text-gray-300/50 hover:text-gray-300 transition duration-300"></i></button>
+     <h2 class="text-3xl font-semibold tracking-wider">Albums</h2>
+     <button (click)="swiperContainer.swiper.slideNext()" class=""><i class="fa-solid fa-circle-chevron-right text-xl text-gray-300/50 hover:text-gray-300 transition duration-300"></i></button>
+  </div>
+  <swiper-container 
+  #swiperContainer 
   loop="true" 
   [slidesPerView]="2" 
   [spaceBetween]="30" 
-  [navigation]="{
-    prevEl: '.swiper-button-prev',
-    nextEl: '.swiper-button-next'
-  }"
   class="mt-4 mx-auto">
-
-    @for (album of ArtistAlbums; track album.id) {
-      <swiper-slide>
+  
+  @for (album of ArtistAlbums; track album.id) {
+    <swiper-slide>
         <img src="{{album.images[0].url}}" alt="{{album.name}}">
         <p class="text-center text-xs text-gray-200 mt-1">{{album.name}}</p>
       </swiper-slide>
     }
     
   </swiper-container>
+
+</div>

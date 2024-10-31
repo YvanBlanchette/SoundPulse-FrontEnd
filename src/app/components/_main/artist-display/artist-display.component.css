@@ -4,7 +4,7 @@ table {
 }
 
 td {
-  @apply py-2 text-white text-lg font-medium border-none tracking-wide;
+  @apply py-2 text-white text-lg border-none tracking-wide;
 }
 
 tr {

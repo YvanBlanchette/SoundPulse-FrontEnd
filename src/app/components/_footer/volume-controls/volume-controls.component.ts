@@ -7,7 +7,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 
 //* Service imports
-import { TrackService } from '@/app/services/track.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 @Component({
   selector: 'app-volume-controls',
@@ -27,7 +27,7 @@ export class VolumeControlsComponent implements OnDestroy {
   
   private subscription: Subscription;
 
-  constructor(private trackService: TrackService) {
+  constructor(private trackService: CurrentTrackService) {
     this.subscription = this.trackService.volume$.subscribe((volume) => {
       this.value = volume;
     });

@@ -1,0 +1,33 @@
+.player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+audio {
+  width: 100%;
+}
+
+.progress-bar-container {
+  position: relative;
+  width: 100%;
+}
+
+.progress-bar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.progress-bar-overlay span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  color: #fff;
+}

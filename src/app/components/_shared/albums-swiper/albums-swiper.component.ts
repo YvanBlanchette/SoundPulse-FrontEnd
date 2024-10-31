@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input  } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-albums-swiper',
@@ -10,8 +10,5 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, Input  } from '@angular/core';
 })
 export class AlbumsSwiperComponent {
   @Input() ArtistAlbums: any | null = null;
-
-  ngOnInit(): void {
-    console.log(this.ArtistAlbums);
-  }
+  @ViewChild('swiperContainer') swiperContainer: AlbumsSwiperComponent | null = null;
 }

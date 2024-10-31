@@ -1,40 +1,45 @@
-//* Module imports
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';
 
 //* Service imports
-import { TrackService } from '@/app/services/track.service';
-
-//* Component imports
-import { LibraryItemComponent } from "@/app/components/_sidebar/library-item/library-item.component";
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 @Component({
   selector: 'app-song-details',
   standalone: true,
-  imports: [LibraryItemComponent],
   templateUrl: './song-details.component.html',
 })
-  
 export class SongDetailsComponent implements OnInit, OnDestroy {
   @Input()
   track: Track | null = null;
-  private subscription: Subscription | null = null;
 
-  constructor(private trackService: TrackService) { }
+  private destroy$ = new Subject<void>();
+  private subscription$: Subscription | null = null;
+
+  constructor(private currentTrackService: CurrentTrackService) { }
 
   // Lifecycle hooks
   ngOnInit(): void {
     console.log('Subscribing to currentTrack$');
-    this.subscription = this.trackService.currentTrack$.subscribe((track) => {
+    this.subscription$ = this.currentTrackService.currentTrack$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((track) => {
       console.log('Received track:', track);
-      this.track = track;
+      if (track) {
+        this.track = track;
+      } else {
+        console.log('No track received');
+        // Optionally, reset track details
+      }
     });
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

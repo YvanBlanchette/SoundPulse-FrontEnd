@@ -1,5 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError, shareReplay, firstValueFrom, tap, map } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, catchError, defer, EMPTY, map, Observable, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { LocalStorageCacheService } from './local-storage-cache.service';
 
 //* Interface imports
@@ -9,144 +10,161 @@ import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response'
 
 //* Environment imports
 import { env } from '@/env/environment';
-import { Injectable } from '@angular/core';
+import { NewAlbums } from '../interfaces/new-albums';
 
+//? Enum for item types
 enum ItemType {
-  Playlist = 'Liste de lecture',
-  Artist = 'Artiste',
-  Album = 'Album'
+  Playlist = 'playlist',
+  Artist = 'artist',
+  Album = 'album',
+  Library = 'library',
+  NewAlbums = 'new-albums'
 }
 
-/**
- * Service to manage API request calls and caching.
- */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  //? Get the API_URL from the environment file
+  libraryItems: LibraryItem[] = [];
   private apiUrl = env.API_URL;
+  private httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
 
-  //! Inject the HttpClient and LocalStorageCacheService
+  //? Observable for current track
+  private currentTrackSubject = new BehaviorSubject<any | null>(null);
+  currentTrack$: Observable<any | null> = this.currentTrackSubject.asObservable();
+
   constructor(private http: HttpClient, private cacheService: LocalStorageCacheService) { }
 
+  //! Function to generate cache key for local storage
+  private generateCacheKey(type: ItemType, id: string): string {
+    return `cache-${type}-${id}`;
+  }
 
-  //! Generic function to make GET API request with caching (shareReplay)
-  get(cacheKey: string): Observable<any> {
-    const originalCacheKey = cacheKey;
-    cacheKey = cacheKey.replace('cache-', '');
-  
-    // Check cache before making API request
-    const cachedResponse = this.cacheService.getItem(originalCacheKey);
-  
-    // If there is a cached response, create an observable with it
+  //! Function to handle errors
+  private handleError(error: any) {
+    console.error('API Call Error: ', error);
+    return throwError(() => error);
+  }
+
+  //! Generic function to fetch data from API with caching
+  private get<T>(cacheKey: string, endpoint: string): Observable<T> {
+    const cachedResponse = this.cacheService.getItem(cacheKey);
+
     if (cachedResponse) {
-      return new Observable((observer) => observer.next(cachedResponse));
+      // console.log(`Cache hit: ${cacheKey}`);
+      return defer(() => cachedResponse) as Observable<T>;
+    } else {
+      // console.log(`Cache miss: ${cacheKey}`);
+      return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
+        timeout(10000), // 10 seconds timeout to  display error on the fetch
+        catchError((error) => this.handleError(error)),
+        shareReplay(1),
+        tap((response) => this.cacheService.setItem(cacheKey, response))
+      );
     }
-  
-    // Define the endpoint based on the cacheKey
-    let endpoint = cacheKey;
-    
-    if (endpoint.includes('artist-')) {
-      endpoint = `artists/${endpoint.replace('artist-', '')}/details`;
-    } else if (endpoint.includes('album-')) {
-      endpoint = `albums/${endpoint.replace('album-', '')}/details`;
-    } else if (endpoint === 'library') {
-      endpoint = 'library';
-    }
-  
-    // If there is no cached response, make the API request
-    return this.http.get(`${this.apiUrl}/${endpoint}`).pipe(
-      catchError((error) => {
-        console.error('API Call Error: ', error);
-        return throwError(() => error);
-      }),
-      shareReplay(1),
-      tap((response) => this.cacheService.setItem(originalCacheKey, response))
-    );
   }
 
-
-  //! Get library items from API
+  //! Function to get library items
   getLibraryItems(): Observable<LibraryItem[]> {
-    const cacheKey = 'cache-library';
-    return this.get(cacheKey);
-  }
-
-  //! Get artists. albums and playlists details
-  getArtistDetails(id: string): Observable<ExtendedArtistResponse> {
-    const cacheKey = `cache-artist-${id}`;
-    return this.get(cacheKey).pipe(
-      map((response: any) => response as ExtendedArtistResponse)
-    );
-  }
+    const cacheKey = this.generateCacheKey(ItemType.Library, 'all');
+    const endpoint = 'library';
   
-  getAlbumDetails(id: string, artistId: string): Observable<ExtendedAlbumResponse> {
-    const cacheKey = `cache-album-${id}`;
-    const endpoint = `albums/${id}/details?artistId=${artistId}`;
-  
-    // Check cache before making API request
-    const cachedAlbum = this.cacheService.getItem(cacheKey);
-    
-    if (cachedAlbum) {
-      return new Observable((observer) => observer.next(cachedAlbum));
-    }
-  
-    // Make API request
-    return this.http.get(`${this.apiUrl}/${endpoint}`).pipe(
-      catchError((error) => {
-        console.error('API Call Error: ', error);
-        return throwError(() => error);
+    return this.get<LibraryItem[]>(cacheKey, endpoint).pipe(
+      tap((response) => {
+        localStorage.setItem(cacheKey, JSON.stringify(response)); // Store response in cache
       }),
-      shareReplay(1),
-      tap((response) => this.cacheService.setItem(cacheKey, response)),
-      map((response: any) => response as ExtendedAlbumResponse)
     );
   }
-  
-  
-  getPlaylistDetails(id: string): Observable<any> {
-    const cacheKey = `cache-playlist-${id}`;
-    return this.get(cacheKey);
-  }
 
-
-  //! Get library items (Also parsing the image JSON to object)
+  //! Function to format library items
   getFormattedLibraryItems(): Observable<LibraryItem[]> {
     return this.getLibraryItems().pipe(
-      map((libraryItems: any[]) => {
-        return libraryItems.map((item: any) => ({
-          ...item,
-          image: JSON.parse(item.image),
-        })) as LibraryItem[];
+      map((libraryItems) => {
+        if (!Array.isArray(libraryItems) || libraryItems.length === 0) {
+          return []; 
+        }
+        return libraryItems
+          .map((item: LibraryItem) => ({
+            ...item,
+            image: typeof item.image === 'string' ? JSON.parse(item.image) : item.image,
+          }))
+          .sort((a, b) => a.type.localeCompare(b.type));
       }),
-      tap((libraryItems: LibraryItem[]) => {
-        const typeOrder = {
-          'Liste de lecture': 0,
-          'Artiste': 1,
-          'Album': 2,
-        };
-        libraryItems.sort((a, b) => typeOrder[a.type as keyof typeof typeOrder] - typeOrder[b.type as keyof typeof typeOrder]);
+      catchError((error) => {
+        console.error('Error formatting library items:', error);
+        return EMPTY;
       })
     );
   }
 
+  //! Function to get artist details
+  getArtistDetails(id: string): Observable<ExtendedArtistResponse> {
+    const cacheKey = this.generateCacheKey(ItemType.Artist, id);
+    const endpoint = `artists/${id}/details`;
 
-  //! Fetch item details
-  async fetchItemDetails(item: LibraryItem): Promise<any> {
-    try {
+    return this.get<ExtendedArtistResponse>(cacheKey, endpoint);
+  }
+
+  //! Function to get album details
+  getAlbumDetails(id: string, artistId: string): Observable<ExtendedAlbumResponse> {
+    const cacheKey = this.generateCacheKey(ItemType.Album, id);
+    const endpoint = `albums/${id}/details?artistId=${artistId}`;
+
+    return this.get<ExtendedAlbumResponse>(cacheKey, endpoint);
+  }
+
+  //! Function to get playlist details
+  getPlaylistDetails(id: string): Observable<any> {
+    const cacheKey = this.generateCacheKey(ItemType.Playlist, id);
+    const endpoint = `playlists/${id}/details`;
+
+    return this.get<any>(cacheKey, endpoint);
+  }
+
+  //! Function to get new albums
+  getNewAlbums(): Observable<NewAlbums> {
+    const cacheKey = this.generateCacheKey(ItemType.NewAlbums, 'latest');
+    const endpoint = 'albums/new-releases';
+
+    return this.http.get<NewAlbums>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
+      timeout(10000), // 10-second timeout
+      catchError(this.handleError),
+      shareReplay(1),
+      tap((response) => this.cacheService.setItem(cacheKey, response))
+    );
+  }
+
+  //! Function to fetch item details
+  fetchItemDetails(item: LibraryItem): Observable<any> {
+    return defer(() => {
       switch (item.type) {
         case ItemType.Playlist:
-          return await firstValueFrom(this.getPlaylistDetails(item.id));
+          return this.getPlaylistDetails(item.id);
         case ItemType.Artist:
-          return await firstValueFrom(this.getArtistDetails(item.id));
+          return this.getArtistDetails(item.id);
         case ItemType.Album:
-          return await firstValueFrom(this.getAlbumDetails(item.id, (item.owner_id as string)));
+          return this.getAlbumDetails(item.id, item.owner_id as string);
         default:
-          console.error(`Unexpected item type: ${item.type}`);
-          return null;
+          return throwError(() => new Error(`Unexpected item type: ${item.type}`));
       }
-    } catch (error) {
-      console.error('Error fetching item details:', error);
-      return null;
-    }
+    });
+  }
+
+  //! Function to get track details
+  getTrackDetails(id: string): Observable<any> {
+    const cacheKey = `cache-track-${id}`;
+    const endpoint = `tracks/${id}/details`;
+
+    return this.get<any>(cacheKey, endpoint).pipe(
+      tap((track) => {
+        this.currentTrackSubject.next(track);
+        this.cacheService.setItem(cacheKey, track);
+      })
+    );
+  }
+
+  //! Function to clear current track
+  clearCurrentTrack(): void {
+    this.currentTrackSubject.next(null);
   }
 }
