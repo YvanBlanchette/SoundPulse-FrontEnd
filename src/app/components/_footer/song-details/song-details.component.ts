@@ -25,15 +25,13 @@ export class SongDetailsComponent implements OnInit, OnDestroy {
 
   // Lifecycle hooks
   ngOnInit(): void {
-    console.log('Subscribing to currentTrack$');
     this.subscription$ = this.currentTrackService.currentTrack$.pipe(
       takeUntil(this.destroy$)
     ).subscribe((track) => {
-      console.log('Received track:', track);
       if (track) {
         this.track = track;
       } else {
-        console.log('No track received');
+        console.error('No track received');
         // Optionally, reset track details
       }
     });

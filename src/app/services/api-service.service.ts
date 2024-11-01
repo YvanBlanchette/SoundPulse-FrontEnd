@@ -51,10 +51,8 @@ export class ApiService {
     const cachedResponse = this.cacheService.getItem(cacheKey);
 
     if (cachedResponse) {
-      // console.log(`Cache hit: ${cacheKey}`);
       return defer(() => cachedResponse) as Observable<T>;
     } else {
-      // console.log(`Cache miss: ${cacheKey}`);
       return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
         timeout(10000), // 10 seconds timeout to  display error on the fetch
         catchError((error) => this.handleError(error)),
@@ -116,8 +114,8 @@ export class ApiService {
   //! Function to get playlist details
   getPlaylistDetails(id: string): Observable<any> {
     const cacheKey = this.generateCacheKey(ItemType.Playlist, id);
-    const endpoint = `playlists/${id}/details`;
-
+    const endpoint = `playlists/${id}`;
+    
     return this.get<any>(cacheKey, endpoint);
   }
 

@@ -23,6 +23,5 @@ export class LibraryItemComponent {
   onSelect(): void {
     this.selected.emit(this.item);
     this.selectedLibraryItemService.setSelectedItem(this.item);
-    console.log('Selected item: ', this.item);
   }
 }

@@ -48,7 +48,6 @@ export class LibraryComponent implements OnInit {
   }
 
   onItemSelected(item: LibraryItem) {
-    console.log('Selected Item:', item);
     this.selectedItem = item;
     if (item.type === 'Artiste') {
       this.artistDetailsStoreService.loadArtistDetails(item.id);

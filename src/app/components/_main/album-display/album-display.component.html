@@ -5,7 +5,7 @@
 <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30">
+    <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
 
     <!-- Display header -->
     <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
@@ -47,6 +47,16 @@
               <ng-container matColumnDef="title">
                 <th mat-header-cell *matHeaderCellDef>Titre</th>
                 <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)"> {{ track.name }} </td>
+              </ng-container>
+
+              <!-- Artists column -->
+              <ng-container matColumnDef="artist">
+                <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
+                <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track.track)">
+                  <span *ngFor="let artist of track.artists; let i = index">
+                    {{ artist.name }}<span *ngIf="i < track.artists.length - 1">, </span>
+                  </span>
+                </td>
               </ng-container>
             
               <!-- Duration column -->

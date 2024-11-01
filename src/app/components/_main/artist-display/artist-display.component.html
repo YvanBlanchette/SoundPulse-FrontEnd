@@ -5,7 +5,7 @@
 <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30">
+    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
 
     <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
       <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square rounded mr-6">
@@ -67,6 +67,17 @@
               <!-- Table rows -->
               <tr mat-row *matRowDef="let row; columns: ['index', 'thumbnail', 'name', 'duration']" class="cursor-pointer"></tr>
             </table>
+          </div>
+
+          <!-- Display albums -->
+          <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Albums de {{ artistDetails?.name }}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 w-full">
+            @for(album of albums; track album.id) {
+              <article>
+                <img src="{{ album.images[0].url }}" alt="{{album.name}}"   (click)="onSelect()">
+                <p class="text-gray-400 text-sm mb-4 text-center">{{ album.name }} ({{ (album.release_date).slice(0,4) }})</p>
+              </article>
+            }
           </div>
       </div>
     </div>

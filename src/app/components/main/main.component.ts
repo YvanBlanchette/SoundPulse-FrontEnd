@@ -15,6 +15,7 @@ import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-respons
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { WelcomePageComponent } from "../_main/welcome-page/welcome-page.component";
 import { ProgressSpinnerComponent } from "../_shared/progress-spinner/progress-spinner.component";
+import { PlaylistResponse } from '@/app/interfaces/playlist-response';
 
 @Component({
   selector: 'app-main',
@@ -28,6 +29,9 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   
   // Album details
   albumDetails: ExtendedAlbumResponse | null = null;
+
+  // Album details
+  playlistDetails: PlaylistResponse | null = null;
   
   // Subscription for API calls
   subscription: Subscription | null = null;
@@ -70,6 +74,19 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           ).subscribe((album) => {
             // Update album and item details
             this.albumDetails = album;
+              this.cdr.detectChanges(); 
+          });
+        }
+        //! Load playlist details
+        else if (item.type === 'Liste de lecture') {
+          // Use cache service to fetch or retrieve playlist details
+          this.subscription = this.localStorageCacheService.getOrFetchItem(
+            `playlist-${item.id}`,
+            () => this.apiService.getPlaylistDetails(item.id ?? '')
+          ).subscribe((playlist) => {
+            console.log(playlist);
+            // Update playlist and item details
+            this.playlistDetails = playlist;
               this.cdr.detectChanges(); 
           });
         }

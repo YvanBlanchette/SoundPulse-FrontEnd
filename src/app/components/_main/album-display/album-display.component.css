@@ -15,9 +15,15 @@
     @apply bg-transparent hover:bg-gray-300/5 border-none;
   }
 
+  td.artists {
+    @apply text-base text-gray-200;
+  }
+
   .durationHeader i {
     @apply ml-2;
   }
+
+
   
   
     /* WebKit */

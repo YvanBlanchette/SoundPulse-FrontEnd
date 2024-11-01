@@ -7,7 +7,7 @@
     } @else if (selectedItem && selectedItem.type === 'Album') {
       <app-album-display [albumDetails]="albumDetails" />
     } @else if (selectedItem && selectedItem.type === 'Liste de lecture') {
-      <app-playlist-display />
+      <app-playlist-display [playlistDetails]="playlistDetails" />
     }
   }
 </div>

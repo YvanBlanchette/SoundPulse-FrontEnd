@@ -17,6 +17,7 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 })
   
 export class VolumeControlsComponent implements OnDestroy {
+
   // Properties
   value: number = 0.5;
   isMuted: boolean = false;
@@ -24,40 +25,63 @@ export class VolumeControlsComponent implements OnDestroy {
   min: number = 0;
   max: number = 1;
   step: number = 0.1;
+
+  // Volume state
+  private volume: number = 0.5;
+
+  // Previous volume state
+  public previousVolume: number = 0.5; 
   
+  // Subscriptions
   private subscription: Subscription;
 
   constructor(private trackService: CurrentTrackService) {
+    // Subscribe to volume changes
     this.subscription = this.trackService.volume$.subscribe((volume) => {
       this.value = volume;
     });
   }
 
+  // Set the volume control
   volumeControl = new FormControl(this.value);
 
-  // Lifecycle hooks
   ngOnDestroy() {
+    // Unsubscribe
     this.subscription.unsubscribe();
   }
 
   // Methods
   private volumeTimeout: any = null;
 
-  setVolume(event: Event) {
-    const volume = (event.target as HTMLInputElement).valueAsNumber;
-    if (!isNaN(volume) && volume >= 0 && volume <= 100) {
-      this.trackService.setVolume(volume);
+  // Toggle mute
+  toggleMute() {
+    // Toggle mute state
+    this.isMuted = !this.isMuted;
+    // If muted...
+    if (this.isMuted) {
+      // Set the previousVolume to the current volume
+      this.previousVolume = this.volume;
+      // Set the volume to 0
+      this.volume = 0;
+      // Set the volume
+      this.trackService.setVolume(this.volume);
+    } else {
+      // Otherwise, set the volume to the previous volume
+      this.volume = this.previousVolume;
+      // Set the volume
+      this.trackService.setVolume(this.volume);
     }
   }
-
-  toggleMute() {
-    this.isMuted = !this.isMuted;
-    if (this.isMuted) {
-      this.disabled = true;
-      this.trackService.setVolume(0);
-    } else {
-      this.disabled = false;
-      this.trackService.setVolume(this.value);
-    }
+  
+  // Update volume when changed
+  setVolume(event: any) {
+    // Update volume on slider change
+    this.volume = event.target.value;
+    // unMute when slider is changed
+    this.isMuted = false;
+    // Set disabled to false
+    this.disabled = false;
+    // Update volume
+    this.trackService.setVolume(this.volume);
   }
 }

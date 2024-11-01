@@ -13,21 +13,27 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 //* Component imports
 import { AlbumDetailsStoreService } from '@/app/services/stores/album-details-store.service';
 import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-album-display',
   standalone: true,
-  imports: [MatTableModule, ProgressSpinnerComponent],
+  imports: [MatTableModule, ProgressSpinnerComponent, NgFor, NgIf],
   templateUrl: './album-display.component.html',
   styleUrls: ['./album-display.component.css']
 })
 
 export class AlbumDisplayComponent implements OnInit, OnDestroy {
   private _albumDetails: ExtendedAlbumResponse | null | undefined = null;
+
   tracks: any | null | undefined = null;
+
   otherAlbums: AlbumResponse[] | null | undefined = null;
-  displayedColumns: string[] = ['track_number', 'title', 'duration', 'options'];
+
+  displayedColumns: string[] = ['track_number', 'title','artist', 'duration', 'options'];
+
   isLoading: boolean = false;
+
   private loadingSubscription: Subscription | null = null;
 
   constructor(private albumDetailsStoreService: AlbumDetailsStoreService, private currentTrackService: CurrentTrackService) { }
@@ -65,6 +71,5 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService.selectTrack(track);
-    console.log('Track clicked:', track);
   }
 }
