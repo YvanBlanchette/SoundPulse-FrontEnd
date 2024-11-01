@@ -21,3 +21,7 @@
 .mat-drawer-inner-container {
   overflow: hidden;
 }
+
+.soundPulse {
+  @apply bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent;
+}

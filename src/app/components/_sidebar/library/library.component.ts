@@ -12,6 +12,7 @@ import { LibraryItemComponent } from '@/app/components/_sidebar/library-item/lib
 import { ApiService } from '@/app/services/api-service.service';
 import { ArtistDetailsStoreService } from '@/app/services/stores/artist-details-store.service';
 import { AlbumDetailsStoreService } from '@/app/services/stores/album-details-store.service';
+import { PlaylistDetailsStoreService } from '@/app/services/stores/playlist-details-store.service';
 
 @Component({
   selector: 'app-library',
@@ -30,6 +31,7 @@ export class LibraryComponent implements OnInit {
     private apiService: ApiService,
     private artistDetailsStoreService: ArtistDetailsStoreService,
     private albumDetailsStoreService: AlbumDetailsStoreService,
+    private playlistDetailsStoreService: PlaylistDetailsStoreService
   ) { }
 
   // Lifecycle hooks
@@ -55,6 +57,9 @@ export class LibraryComponent implements OnInit {
     else if (item.type === 'Album') {
       const artistId = item.owner_id as string;
       this.albumDetailsStoreService.loadAlbumDetails(item.id, artistId);
+    }
+    else if (item.type === 'Liste de lecture') {
+      this.playlistDetailsStoreService.loadPlaylistDetails(item.id);
     }
   }
 }

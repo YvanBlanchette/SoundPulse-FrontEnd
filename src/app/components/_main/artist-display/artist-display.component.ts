@@ -1,6 +1,8 @@
+import { Subscription } from 'rxjs';
+import { NgClass } from '@angular/common';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { Subscription } from 'rxjs';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';
@@ -11,16 +13,17 @@ import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-respons
 import { CurrentTrackService } from '@/app/services/current-track.service';
 
 //* Component imports
-import { ArtistDetailsStoreService } from '@/app/services/stores/artist-details-store.service';
-import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
-import { SelectedLibraryItemService } from '@/app/services/selected-library-item.service';
 import { LibraryItem } from '@/app/interfaces/library-item';
 import { AlbumLibraryItem } from '@/app/interfaces/album-library-items';
+import { SelectedLibraryItemService } from '@/app/services/selected-library-item.service';
+import { ArtistDetailsStoreService } from '@/app/services/stores/artist-details-store.service';
+import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
+import { ApiService } from '@/app/services/api-service.service';
 
 @Component({
   selector: 'app-artist-display',
   standalone: true,
-  imports: [MatTableModule, ProgressSpinnerComponent],
+  imports: [MatTableModule, ProgressSpinnerComponent, MatMenuModule, NgClass],
   templateUrl: './artist-display.component.html',
   styleUrls: ['./artist-display.component.css']
 })
@@ -33,15 +36,15 @@ export class ArtistDisplayComponent implements OnInit, OnDestroy {
 
   albums: AlbumResponse[] | null | undefined = null;
 
-  verified: boolean = true;
-
   dataSource: Track[] = [];
+  
+  isVerified: boolean = true;
 
   isLoading: boolean = false;
 
   private loadingSubscription: Subscription | null = null;
 
-  constructor(private artistDetailsStoreService: ArtistDetailsStoreService, private currentTrackService: CurrentTrackService, private selectedLibraryItemService: SelectedLibraryItemService) { }
+  constructor(private artistDetailsStoreService: ArtistDetailsStoreService, private currentTrackService: CurrentTrackService, private selectedLibraryItemService: SelectedLibraryItemService, private apiService: ApiService) { }
 
   ngOnInit(): void {
     this.loadingSubscription = this.artistDetailsStoreService.loading$.subscribe((loading) => {
@@ -87,5 +90,19 @@ export class ArtistDisplayComponent implements OnInit, OnDestroy {
       this.selectedLibraryItemService.setSelectedItem(this.album);
       console.log(this.album);
     }
+  }
+
+  //! Function to toggle favourite
+  public toggleFavourite(track: Track) {
+    this.apiService.toggleFavourite(track).subscribe((response) => {
+      console.log('Favourite toggled:', response);
+    }, (error) => {
+      console.error('Error toggling favourite:', error);
+    });
+  }
+
+  //! Function to check if a track is a favorite
+  isFavourite(track: Track): boolean {
+    return this.apiService.isFavourite(track);
   }
 }

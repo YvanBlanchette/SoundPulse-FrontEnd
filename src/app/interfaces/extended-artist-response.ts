@@ -4,5 +4,5 @@ import { TrackResponse } from "./track-response";
 
 export interface ExtendedArtistResponse extends ArtistResponse {
   albums: AlbumResponse[] | null;
-  topTracks: TrackResponse | null;
+  topTracks: TrackResponse[] | null;
 }

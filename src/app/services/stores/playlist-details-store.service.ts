@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, EMPTY, Observable } from 'rxjs';
 
 //* Interface imports
 import { PlaylistResponse } from '@/app/interfaces/playlist-response';
@@ -39,21 +39,14 @@ export class PlaylistDetailsStoreService {
   }
 
   //! Function to load playlist details and store in cache
-  loadPlaylistDetails(id: string): void {
-    this.loadingSubject.next(true); // Set loading to true
-    const cacheKey = `cache-playlist-${id}`;
-    const cachedPlaylist = this.cacheService.getItem(cacheKey) as PlaylistResponse;
-    
-    if (cachedPlaylist) {
-      this.playlistSubject.next(cachedPlaylist);
-      this.loadingSubject.next(false); // Set loading to false
-    } else {
-      this.apiService.getPlaylistDetails(id).subscribe((playlist: PlaylistResponse) => {
-        this.cacheService.setItem(cacheKey, playlist);
-        this.playlistSubject.next(playlist);
-        this.loadingSubject.next(false); // Set loading to false
-      });
-    }
+  loadPlaylistDetails(id: string): Observable<any> {
+    return this.apiService.getPlaylistDetails(id).pipe(
+      catchError((error) => {
+        console.error('Error loading playlist details:', error);
+        // Handle error or return a default value
+        return EMPTY;
+      })
+    );
   }
 
   //! Function to reset playlist details and remove from cache

@@ -22,4 +22,6 @@ export interface Track {
   type: string;
   uri: string;
   album: Album;
+  isFavourite?: boolean;
+  rating?: number;
 }

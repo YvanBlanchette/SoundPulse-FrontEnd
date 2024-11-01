@@ -1,16 +1,21 @@
+//* Module imports
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, defer, EMPTY, map, Observable, shareReplay, tap, throwError, timeout } from 'rxjs';
-import { LocalStorageCacheService } from './local-storage-cache.service';
 
 //* Interface imports
+import { NewAlbums } from '@/app/interfaces/new-albums';
 import { LibraryItem } from '@/app/interfaces/library-item';
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 
 //* Environment imports
 import { env } from '@/env/environment';
-import { NewAlbums } from '../interfaces/new-albums';
+
+//* Service imports
+import { LocalStorageCacheService } from './local-storage-cache.service';
+import { Track } from '../interfaces/track';
+
 
 //? Enum for item types
 enum ItemType {
@@ -164,5 +169,67 @@ export class ApiService {
   //! Function to clear current track
   clearCurrentTrack(): void {
     this.currentTrackSubject.next(null);
+  }
+
+  //! Function to check if a track is in the favorites
+  isFavourite(track: Track): boolean {
+    const favouriteTrackIds = JSON.parse(localStorage.getItem('favourite-track-ids') || '[]');
+    return favouriteTrackIds.includes(track.id);
+  }
+
+ 
+  //! Function to toggle favourite track
+toggleFavourite(track: Track): Observable<any> {
+  const apiUrl = env.API_URL;
+  const endpoint = 'favourites/';
+  const trackId = track.id;
+  const cacheKey = 'favourite-track-ids';
+
+  // Use isFavourite method to check if track is already a favorite
+  const isFavourite = this.isFavourite(track);
+
+  if (isFavourite) {
+    // Remove from favourites
+    return this.http.delete(`${apiUrl}/${endpoint}${trackId}`, this.httpOptions).pipe(
+      catchError(this.handleError),
+      tap(() => {
+        track.isFavourite = false;
+        this.updateCache(cacheKey, trackId, false);
+      })
+    );
+  } else {
+    // Add to favourites
+    const favouriteData = {
+      song_id: trackId,
+      name: track.name,
+      duration_ms: track.duration_ms,
+      preview_url: track.preview_url,
+      artists: track.artists,
+      album: track.album,
+      rating: track.rating,
+    };
+
+    return this.http.post(`${apiUrl}/${endpoint}`, favouriteData, this.httpOptions).pipe(
+      catchError(this.handleError),
+      tap(() => {
+        track.isFavourite = true;
+        this.updateCache(cacheKey, trackId, true);
+      })
+    );
+  }
+}
+
+  //! Helper function to update cache without expiration
+  private updateCache(cacheKey: string, trackId: string, isFavourite: boolean) {
+    const storedIds = localStorage.getItem(cacheKey);
+    let favouriteTrackIds = storedIds ? JSON.parse(storedIds) : [];
+
+    if (isFavourite) {
+      favouriteTrackIds.push(trackId);
+    } else {
+      favouriteTrackIds = favouriteTrackIds.filter((id: string) => id !== trackId);
+    }
+
+    localStorage.setItem(cacheKey, JSON.stringify(favouriteTrackIds));
   }
 }

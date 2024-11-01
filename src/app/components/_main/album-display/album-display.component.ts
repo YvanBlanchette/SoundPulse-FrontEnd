@@ -14,11 +14,13 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 import { AlbumDetailsStoreService } from '@/app/services/stores/album-details-store.service';
 import { ProgressSpinnerComponent } from "../../_shared/progress-spinner/progress-spinner.component";
 import { NgFor, NgIf } from '@angular/common';
+import { MatMenuModule } from '@angular/material/menu';
+import { ApiService } from '@/app/services/api-service.service';
 
 @Component({
   selector: 'app-album-display',
   standalone: true,
-  imports: [MatTableModule, ProgressSpinnerComponent, NgFor, NgIf],
+  imports: [MatTableModule, ProgressSpinnerComponent, MatMenuModule, NgFor, NgIf],
   templateUrl: './album-display.component.html',
   styleUrls: ['./album-display.component.css']
 })
@@ -36,7 +38,7 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
 
   private loadingSubscription: Subscription | null = null;
 
-  constructor(private albumDetailsStoreService: AlbumDetailsStoreService, private currentTrackService: CurrentTrackService) { }
+  constructor(private albumDetailsStoreService: AlbumDetailsStoreService, private currentTrackService: CurrentTrackService, private apiService: ApiService) { }
 
   ngOnInit(): void {
     this.loadingSubscription = this.albumDetailsStoreService.loading$.subscribe((loading) => {
@@ -71,5 +73,19 @@ export class AlbumDisplayComponent implements OnInit, OnDestroy {
   //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService.selectTrack(track);
+  }
+
+  //! Function to toggle favourite
+  public toggleFavourite(track: Track) {
+    this.apiService.toggleFavourite(track).subscribe((response) => {
+      console.log('Favourite toggled:', response);
+    }, (error) => {
+      console.error('Error toggling favourite:', error);
+    });
+  }
+
+  //! Function to check if a track is a favorite
+  isFavourite(track: Track): boolean {
+    return this.apiService.isFavourite(track);
   }
 }

@@ -13,11 +13,14 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 import { PlaylistDetailsStoreService } from '@/app/services/stores/playlist-details-store.service';
 import { ProgressSpinnerComponent } from "@/app/components/_shared/progress-spinner/progress-spinner.component";
 import { NgFor, NgIf } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { ApiService } from '@/app/services/api-service.service';
 
 @Component({
   selector: 'app-playlist-display',
   standalone: true,
-  imports: [MatTableModule, ProgressSpinnerComponent, NgFor, NgIf],
+  imports: [MatTableModule, ProgressSpinnerComponent, MatMenuModule, NgFor, NgIf],
   templateUrl: './playlist-display.component.html',
   styleUrls: ['./playlist-display.component.css']
 })
@@ -33,7 +36,7 @@ export class PlaylistDisplayComponent implements OnInit, OnDestroy {
 
   private loadingSubscription: Subscription | null = null;
 
-  constructor(private playlistDetailsStoreService: PlaylistDetailsStoreService, private currentTrackService: CurrentTrackService) { }
+  constructor(private playlistDetailsStoreService: PlaylistDetailsStoreService, private currentTrackService: CurrentTrackService, private apiService: ApiService) { }
 
   ngOnInit(): void {
     this.loadingSubscription = this.playlistDetailsStoreService.loading$.subscribe((loading) => {
@@ -49,10 +52,12 @@ export class PlaylistDisplayComponent implements OnInit, OnDestroy {
   set playlistDetails(value: PlaylistResponse | null | undefined) {
     this._playlistDetails = value;
     if (value !== null) {
-      this.tracks = value?.tracks?.items ?? [];
+      this.tracks = value?.tracks?.items?.map((item) => item.track) ?? [];
+    } else {
+      this.tracks = [];
     }
   }
-
+  
   get playlistDetails(): PlaylistResponse | null | undefined {
     return this._playlistDetails;
   }
@@ -67,5 +72,19 @@ export class PlaylistDisplayComponent implements OnInit, OnDestroy {
   //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService.selectTrack(track);
+  }
+
+  //! Function to toggle favourite
+  public toggleFavourite(track: Track) {
+    this.apiService.toggleFavourite(track).subscribe((response) => {
+      console.log('Favourite toggled:', response);
+    }, (error) => {
+      console.error('Error toggling favourite:', error);
+    });
+  }
+
+  //! Function to check if a track is a favorite
+  isFavourite(track: Track): boolean {
+    return this.apiService.isFavourite(track);
   }
 }

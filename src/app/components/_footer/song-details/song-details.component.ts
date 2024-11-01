@@ -30,9 +30,6 @@ export class SongDetailsComponent implements OnInit, OnDestroy {
     ).subscribe((track) => {
       if (track) {
         this.track = track;
-      } else {
-        console.error('No track received');
-        // Optionally, reset track details
       }
     });
   }
