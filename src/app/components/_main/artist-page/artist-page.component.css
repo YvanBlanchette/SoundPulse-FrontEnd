@@ -1,15 +1,32 @@
-:host {
 table {
   @apply w-full bg-transparent border-none border-transparent text-white;
+}
+
+th {
+  @apply text-gray-400 text-lg font-medium tracking-wide;
 }
 
 td {
   @apply py-2 text-white text-lg border-none tracking-wide;
 }
 
-tr {
+tr:has(td) {
   @apply bg-transparent hover:bg-gray-300/5 border-none;
 }
+
+td.artists {
+  @apply text-base text-gray-200;
+}
+
+tr.selected {
+  @apply bg-gray-300/5
+}
+
+.durationHeader i {
+  @apply ml-2;
+}
+
+
 
 
   /* WebKit */
@@ -34,4 +51,3 @@ tr {
     scrollbar-width: thin;
     scrollbar-color: #88888875 #1F1F1F00;
   }
-}

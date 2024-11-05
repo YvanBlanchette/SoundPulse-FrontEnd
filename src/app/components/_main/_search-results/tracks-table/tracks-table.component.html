@@ -1,0 +1,74 @@
+<table mat-table [dataSource]="dataSource">
+  <!-- Track number column -->
+  <ng-container matColumnDef="index">
+    <th mat-header-cell *matHeaderCellDef>#</th>
+    <td mat-cell *matCellDef="let track; let i = index" (click)="onTrackClick(track)"> {{ i + 1 }} </td>
+  </ng-container>
+
+<!-- Thumbnail column -->
+<ng-container matColumnDef="thumbnail">
+  <th mat-header-cell *matHeaderCellDef></th>
+  <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
+    <img src="{{ track.album_image }}" alt="{{track.artists}}" class="w-12 h-12 aspect-square object-cover rounded">
+  </td>
+</ng-container>
+
+  <!-- Name column -->
+  <ng-container matColumnDef="title">
+    <th mat-header-cell *matHeaderCellDef>Titre</th>
+    <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
+       <a (click)="this.routingService.navigateTo(routingService.Categories.track, track.id)" class="cursor-pointer hover:underline">{{ track.name }}</a>
+    </td>
+  </ng-container>
+
+  <!-- Artists column -->
+  <ng-container matColumnDef="artist">
+    <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
+    <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track)">
+      {{ track.artists }}
+    </td>
+  </ng-container>
+
+  <!-- Duration column -->
+  <ng-container matColumnDef="duration">
+    <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
+    <td mat-cell *matCellDef="let track" class="relative py-4" (click)="onTrackClick(track)"> 
+      {{ track.duration }} 
+      <i *ngIf="isFavourite(track)" title="Ajoutée aux favoris" class="absolute top-1/2 right-0 -translate-y-1/2 fa-solid fa-circle-check bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
+    </td>
+  </ng-container>
+
+  <!-- Preview column -->
+  <ng-container matColumnDef="preview">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let track" class="py-4">
+      <audio controls *ngIf="track.preview_url">
+        <source [src]="track.preview_url" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </td>
+  </ng-container>
+   <!-- Options -->
+   <ng-container matColumnDef="options">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let track" class="py-4">
+      <button [matMenuTriggerFor]="trackOptions">
+        <i class="fa-solid fa-ellipsis"></i>
+      </button>
+      <mat-menu #trackOptions="matMenu" xPosition="before">
+        <button (click)="toggleFavourite(track)" mat-menu-item>
+          @if(isFavourite(track)) {
+            Retirer des favoris
+          } @else {
+            Ajouter aux favoris
+          }
+        </button>
+        <button mat-menu-item>Menu item 2</button>
+      </mat-menu>
+    </td>
+  </ng-container>
+
+  <!-- Table rows -->
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer"></tr>
+</table>

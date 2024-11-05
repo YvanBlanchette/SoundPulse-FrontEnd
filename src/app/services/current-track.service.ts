@@ -38,6 +38,11 @@ export class CurrentTrackService {
     }
   }
 
+  //! Function to check if a track is selected
+  isSelected(track: Track): boolean {
+    return this.trackSubject.getValue()?.id === track.id
+  }
+
   //! Function to select a track
   selectTrack(track: Track): void {
     this.trackSubject.next(track);

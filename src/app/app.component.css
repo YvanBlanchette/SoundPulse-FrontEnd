@@ -25,3 +25,30 @@
 .soundPulse {
   @apply bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent;
 }
+
+
+
+/* Scrollbars */
+  /* WebKit */
+  ::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1f1f1f00;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #88888875 #1F1F1F00;
+  }
+

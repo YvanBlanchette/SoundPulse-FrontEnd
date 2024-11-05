@@ -5,29 +5,21 @@
 <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
+    <img src="{{ trackDetails?.album?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
 
     <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
-      <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square rounded mr-6">
+      <img src="{{ trackDetails?.album?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square object-cover rounded mr-6">
       <div class="flex flex-col gap-1">
-        <!-- Display verified badge -->
-        @if(isVerified) {
-          <div>
-            <span class="ml-4 relative">
-              <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
-              <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
-            </span>
-            <span class="ml-5 font-medium tracking-wide">Artiste vérifié</span>
-          </div>
-        }
         <!-- Display artist name -->
-        <h1 class="text-8xl font-bold tracking-wider mt-auto">{{ artistDetails?.name }}</h1>
+        <h1 class="text-5xl font-bold tracking-wider mt-auto">{{ trackDetails?.name }}</h1>
 
         <!-- Display followers count -->
-        <div class="flex items-center gap-12">
-          <p class="ml-2 font-medium">{{ artistDetails?.followers?.total?.toLocaleString('fr-CA') }} abonnés</p>
-
-          
+        <div class="flex items-center">
+          <a (click)="this.routingService.navigateTo(routingService.Categories.artist, trackDetails?.artists?.[0]?.id || '')" class="cursor-pointer hover:underline">{{trackDetails?.artists?.[0]?.name}}</a>
+          <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+          <span><a (click)="onAlbumClick(trackDetails?.album)" class="cursor-pointer hover:underline">{{ trackDetails?.album.name }}</a></span> 
+          <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+          <span>{{ trackDetails?.album.release_date?.slice(0, 4) }}</span> 
         </div>
       </div>
     </div>
@@ -38,12 +30,13 @@
 
           <!-- Display tracks table -->
           <div class="w-full">
-            <h2 class="text-2xl font-semibold tracking-wider mb-4">Chansons populaires</h2>
+            <h2 class="text-2xl font-semibold tracking-wider mb-2">Chansons recommandées</h2>
 
             <!-- Tracks table -->
-            <table mat-table [dataSource]="tracks">
+            <table mat-table [dataSource]="recommendedTracks">
               <!-- Index column -->
               <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef>#</th>
                 <td mat-cell *matCellDef="let track; let i = index" (click)="onTrackClick(track)" class=""> 
                   {{ i + 1 }} 
                 </td>
@@ -51,18 +44,32 @@
             
               <!-- Thumbnail column -->
               <ng-container matColumnDef="thumbnail">
+                <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
                   <img src="{{ track.album.images[0].url }}" alt="" class="w-12 h-12 rounded">
                 </td>
               </ng-container>
             
               <!-- Name column -->
-              <ng-container matColumnDef="name">
-                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)"> {{ track.name }} </td>
+              <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef>Titre</th>
+                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
+                  <a (click)="this.routingService.navigateTo(routingService.Categories.track, track.id)" class="cursor-pointer hover:underline">{{ track.name }}</a></td>
+              </ng-container>
+
+              <!-- Artists column -->
+              <ng-container matColumnDef="artist">
+                <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
+                <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track)">
+                  <span *ngFor="let artist of track.artists; let i = index">
+                    <a (click)="this.routingService.navigateTo(routingService.Categories.artist, artist.id)" class="cursor-pointer hover:underline">{{ artist.name }}</a><span *ngIf="i < track.artists.length - 1">, </span>
+                  </span>
+                </td>
               </ng-container>
             
               <!-- Duration column -->
               <ng-container matColumnDef="duration">
+                <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
                 <td mat-cell *matCellDef="let track" class="py-4 relative" (click)="onTrackClick(track)"> 
                   {{ durationFormatter(track.duration_ms) }}
                     @if(isFavourite(track)) {
@@ -73,6 +80,7 @@
 
               <!-- Options -->
               <ng-container matColumnDef="options">
+                <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let track" class="py-4">
                   <button [matMenuTriggerFor]="trackOptions">
                     <i class="fa-solid fa-ellipsis"></i>
@@ -85,25 +93,15 @@
                         Ajouter aux favoris
                       }
                     </button>
-                    <button mat-menu-item>Menu item 2</button>
+                    <button (click)="this.routingService.navigateTo(routingService.Categories.artist, track.artists[0].id)" mat-menu-item>Profil de l'artiste</button>
                   </mat-menu>
                 </td>
               </ng-container>
             
               <!-- Table rows -->
-              <tr mat-row *matRowDef="let row; columns: ['index', 'thumbnail', 'name', 'duration', 'options']" class="cursor-pointer"></tr>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer">
             </table>
-          </div>
-
-          <!-- Display albums -->
-          <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Albums de {{ artistDetails?.name }}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 w-full">
-            @for(album of albums; track album.id) {
-              <article>
-                <img src="{{ album.images[0].url }}" alt="{{album.name}}"   (click)="onSelect()">
-                <p class="text-gray-400 text-sm mb-4 text-center">{{ album.name }} ({{ (album.release_date).slice(0,4) }})</p>
-              </article>
-            }
           </div>
       </div>
     </div>

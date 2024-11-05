@@ -1,0 +1,105 @@
+<!-- Loading State -->
+@if(isLoading === true) {
+  <app-progress-spinner />
+} @else {
+<!-- Main Content -->
+<div class="w-full h-full">
+  <div class="relative w-full h-full">
+    <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
+
+    <!-- Display header -->
+    <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
+      <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square rounded mr-6 object-cover">
+      <div class="flex flex-col gap-1">
+        <p class="text-sm text-gray-400 font-medium tracking-wide">Album</p>
+        <!-- Album name -->
+        <h1 class="text-7xl font-bold tracking-wider">{{ albumDetails?.name }}</h1>
+        
+        <!-- Album data -->
+        <div class="flex items-center gap-12">
+          <p class="text-gray-300 font-medium flex items-center">
+            <a (click)="this.routingService.navigateTo(routingService.Categories.artist, albumDetails?.artists?.[0]?.id || '')" class="cursor-pointer hover:underline">{{albumDetails?.artists?.[0]?.name}}</a>
+            <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+            <span>{{ albumDetails?.release_date?.slice(0, 4) }}</span> 
+            <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+            <span>{{ albumDetails?.total_tracks }} chansons</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Display body -->
+    <div class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
+      <div class="p-6">
+
+          <!-- Display tracks table -->
+          <div class="w-full">
+            <!-- Tracks table -->
+            <table mat-table [dataSource]="tracks">
+              
+              <!-- Track number column -->
+              <ng-container matColumnDef="track_number">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let track" (click)="onTrackClick(track)"> {{track.track_number}} </td>
+              </ng-container>
+            
+              <!-- Name column -->
+              <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef>Titre</th>
+                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)"> 
+                  <a (click)="this.routingService.navigateTo(routingService.Categories.track, track.id)" class="cursor-pointer hover:underline">{{ track.name }}</a>
+                </td>
+              </ng-container>
+
+              <!-- Artists column -->
+              <ng-container matColumnDef="artist">
+                <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
+                <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track)">
+                  <span *ngFor="let artist of track.artists; let i = index">
+                    <a (click)="this.routingService.navigateTo(routingService.Categories.artist, artist.id)" class="cursor-pointer hover:underline">{{ artist.name }}</a><span *ngIf="i < track.artists.length - 1">, </span>
+                  </span>
+                </td>
+              </ng-container>
+            
+              <!-- Duration column -->
+              <ng-container matColumnDef="duration">
+                <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
+
+                <td mat-cell *matCellDef="let track" class="relative py-4" (click)="onTrackClick(track)"> 
+                  {{ durationFormatter(track.duration_ms) }} 
+                  @if(isFavourite(track)) {
+                    <i title="Ajoutée aux favoris" class="absolute top-1/2 right-2 -translate-y-1/2 fa-solid fa-circle-check bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent ml-2"></i>
+                  }
+                </td>
+              </ng-container>
+
+              <!-- Options -->
+              <ng-container matColumnDef="options">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let track" class="py-4">
+                  <button [matMenuTriggerFor]="trackOptions">
+                    <i class="fa-solid fa-ellipsis"></i>
+                  </button>
+                  <mat-menu #trackOptions="matMenu" xPosition="before">
+                    <button (click)="toggleFavourite(track)" mat-menu-item>
+                      @if(isFavourite(track)) {
+                        Retirer des favoris
+                      } @else {
+                        Ajouter aux favoris
+                      }
+                    </button>
+                    <button mat-menu-item>Menu item 2</button>
+                  </mat-menu>
+                </td>
+              </ng-container>
+            
+              <!-- Table rows -->
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer">
+            </table>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+}

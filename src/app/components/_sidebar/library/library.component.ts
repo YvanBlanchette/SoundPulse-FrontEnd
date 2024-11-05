@@ -9,10 +9,8 @@ import { LibraryItem } from '@/app/interfaces/library-item';
 import { LibraryItemComponent } from '@/app/components/_sidebar/library-item/library-item.component';
 
 //* Service imports
-import { ApiService } from '@/app/services/api-service.service';
-import { ArtistDetailsStoreService } from '@/app/services/stores/artist-details-store.service';
-import { AlbumDetailsStoreService } from '@/app/services/stores/album-details-store.service';
-import { PlaylistDetailsStoreService } from '@/app/services/stores/playlist-details-store.service';
+import { ApiService } from '@/app/services/api.service';
+
 
 @Component({
   selector: 'app-library',
@@ -24,21 +22,26 @@ import { PlaylistDetailsStoreService } from '@/app/services/stores/playlist-deta
 export class LibraryComponent implements OnInit {
   libraryItems: LibraryItem[] | null = null;
   selectedItem: LibraryItem | null = null;
+  favouriteSongs: LibraryItem[] | null = null;
   loading = true;
   errorMessage = '';
 
-  constructor(
-    private apiService: ApiService,
-    private artistDetailsStoreService: ArtistDetailsStoreService,
-    private albumDetailsStoreService: AlbumDetailsStoreService,
-    private playlistDetailsStoreService: PlaylistDetailsStoreService
-  ) { }
+  constructor(private apiService: ApiService) { }
 
   // Lifecycle hooks
   ngOnInit(): void {
     this.apiService.getFormattedLibraryItems().subscribe({
       next: (libraryItems) => {
-        this.libraryItems = libraryItems;
+        // Set the library items
+        const result = libraryItems;
+
+        // Set the library items
+        this.libraryItems = result.filter(item => item.type !== 'Favorites');
+
+        // Filter the favourite songs playlist
+        this.favouriteSongs = result.filter(item => item.type === 'Favorites');
+
+        // Set the loading state to false
         this.loading = false;
       },
       error: (error: any) => {
@@ -47,19 +50,5 @@ export class LibraryComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  onItemSelected(item: LibraryItem) {
-    this.selectedItem = item;
-    if (item.type === 'Artiste') {
-      this.artistDetailsStoreService.loadArtistDetails(item.id);
-    }
-    else if (item.type === 'Album') {
-      const artistId = item.owner_id as string;
-      this.albumDetailsStoreService.loadAlbumDetails(item.id, artistId);
-    }
-    else if (item.type === 'Liste de lecture') {
-      this.playlistDetailsStoreService.loadPlaylistDetails(item.id);
-    }
   }
 }
