@@ -1,10 +1,20 @@
+<!-- user-button.component.html -->
 <button mat-button [matMenuTriggerFor]="userMenu" class="flex items-center">
   <!-- User avatar -->
-  <img src="/assets/images/user.jpg" alt="User Image"
+  <img [src]="(user$ | async)?.avatar" alt="User Image"
     class="w-12 h-12 rounded-full object-cover border-[6px] border-black hover:border-[#272727]">
 </button>
 <!-- User menu -->
 <mat-menu #userMenu="matMenu" xPosition="before">
-  <button mat-menu-item>Menu item 1</button>
-  <button mat-menu-item>Menu item 2</button>
+    <p mat-menu-header class="font-semibold pb-1 w-full text-center border-b border-gray-300">
+      {{ (user$ | async)?.name || 'Utilisateur' }}
+    </p>
+    <button (click)="navigateToProfile()" mat-menu-item class="flex items-center">
+      <i class="fa-solid fa-user mr-1"></i>
+      Mon Profil
+    </button>
+    <button (click)="logout()" mat-menu-item class="flex items-center">
+      <i class="fa-solid fa-right-from-bracket mr-1"></i>
+      <span>Déconnexion</span>
+    </button>
 </mat-menu>

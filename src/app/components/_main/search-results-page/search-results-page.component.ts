@@ -56,7 +56,6 @@ export class SearchResultsPage implements OnInit {
         this.apiService.getSearchResults(this.query).pipe(
           tap((response) => {
             this.searchResults = response;
-            console.log(this.searchResults);
             this.isLoading = false;
           }),
           catchError((error) => {
@@ -73,7 +72,6 @@ export class SearchResultsPage implements OnInit {
    
   
   onItemClick(item: any): void {
-    console.log(item);
     if(item.type === 'track') {
       this.router.navigate(['/tracks', item.id]);
     } else if(item.type === 'album') {

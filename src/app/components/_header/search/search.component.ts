@@ -26,7 +26,7 @@ export class SearchComponent {
     if (query.trim() !== '') {
       this.router.navigate(['/search'], { queryParams: { q: query } });
     } else {
-      console.log('Search query cannot be empty');
+      console.error('Search query cannot be empty');
     }
   }
 }

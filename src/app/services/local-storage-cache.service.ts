@@ -28,8 +28,7 @@ export class LocalStorageCacheService {
 
   //! Function to set item in cache
   setItem(key: string, value: any): void {
-    const expiry = Date.now() + this.expiryDuration;
-    this.storage.setItem(key, JSON.stringify({ data: value, expiry }));
+    localStorage.setItem(key, JSON.stringify(value));
   }
 
 

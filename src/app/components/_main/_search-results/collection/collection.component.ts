@@ -15,7 +15,6 @@ export class CollectionComponent {
   constructor(private router: Router) {}
 
   onItemClick(item: any): void {
-    console.log(item);
     if (item.type === 'album') {
       const artistId = item.artists[0].id;
       this.router.navigate(['/albums', item.id], { queryParams: { artistId } });

@@ -1,0 +1,72 @@
+<div class="w-[90%] max-w-xl mx-auto h-screen flex flex-col items-center justify-center text-gray-100">
+  <h1 class="text-[2.5rem] font-bold tracking-wider bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent">Bienvenue sur SoundPulse</h1>
+  <p class="text-base">Inscrivez-vous pour commencer à écouter votre musique préférée!</p>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="w-full">
+    
+    <div class="flex flex-col gap-1 mt-8 w-full">
+       <div class="flex gap-4 items-baseline">
+         <label for="name">Nom complet <span class="text-red-500">*</span></label>
+         <div *ngIf="registerForm.get('name')?.invalid && (registerForm.get('name')?.dirty || registerForm.get('name')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="registerForm.get('name')?.errors?.['required']">
+            Le nom est requis.
+          </div>
+        </div>
+        </div>
+
+      <input type="text" id="name" formControlName="name" placeholder="Entrez votre nom complet" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="name" />
+    </div>
+
+    <div class="flex flex-col gap-1 mt-6 w-full">
+       <div class="flex gap-4 items-baseline">
+         <label for="email">Adresse courriel <span class="text-red-500">*</span></label>
+         <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.dirty || registerForm.get('email')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="registerForm.get('email')?.errors?.['required']">
+            L'adresse Courriel est requise.
+          </div>
+          <div *ngIf="registerForm.get('email')?.errors?.['email']">
+            L'adresse Courriel est invalide.
+          </div>
+        </div>
+        </div>
+
+      <input type="email" id="email" formControlName="email" placeholder="Entrez votre adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="email" />
+    </div>
+
+    <div class="flex flex-col gap-1 mt-6 w-full">
+       <div class="flex gap-4 items-baseline">
+         <label for="password">Mot de passe <span class="text-red-500">*</span></label>
+         <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="registerForm.get('password')?.errors?.['required']">
+            Le mot de passe est requis.
+          </div>
+          <div *ngIf="registerForm.get('password')?.errors?.['minlength']">
+            Le mot de passe doit contenir au moins 8 caractères.
+          </div>
+        </div>
+        </div>
+
+      <input type="password" id="password" formControlName="password" placeholder="Entrez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="new-password" />
+    </div>
+    <div class="flex flex-col gap-1 mt-6 w-full">
+       <div class="flex gap-4 items-baseline">
+         <label for="confirm-password">Confirmer mot de passe <span class="text-red-500">*</span></label>
+         <div *ngIf="registerForm.get('confirmPassword')?.invalid && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
+            La confirmation du mot de passe est requise.
+          </div>
+          <div *ngIf="registerForm.errors?.['mismatch']">
+            Les mots de passe ne correspondent pas.
+          </div>
+        </div>
+        </div>
+
+      <input type="password" id="confirm-password" formControlName="confirmPassword" placeholder="Confirmez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="new-password" />
+      
+    </div>
+
+    <button type="submit" [disabled]="!registerForm.valid" class="mt-12 w-full py-2 bg-gradient-to-br from-[#00C4FF] to-[#F700FD] rounded-md font-medium tracking-wide uppercase hover:opacity-85 transition-opacity duration-300">s'inscrire</button>
+  </form>
+
+  <p class="mt-6 text-sm">Vous avez déja un compte? <span (click)="toggleRegistration()" class="text-[#00C4FF] hover:text-[#F700FD] cursor-pointer font-medium transition-all duration-300">Connectez-vous ici!</span></p>
+</div>

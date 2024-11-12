@@ -1,5 +1,5 @@
 //* Module imports
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
 //* Interface imports
@@ -10,6 +10,8 @@ import { LibraryItemComponent } from '@/app/components/_sidebar/library-item/lib
 
 //* Service imports
 import { ApiService } from '@/app/services/api.service';
+import { LibraryService } from '@/app/services/library.service';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -17,30 +19,34 @@ import { ApiService } from '@/app/services/api.service';
   standalone: true,
   imports: [LibraryItemComponent, MatIconModule],
   templateUrl: './library.component.html',
-  styleUrls: ['./library.component.css']
+  styleUrls: ['./library.component.css'],
+  changeDetection: ChangeDetectionStrategy.Default
 })
-export class LibraryComponent implements OnInit {
+export class LibraryComponent implements OnInit, OnDestroy {
   libraryItems: LibraryItem[] | null = null;
   selectedItem: LibraryItem | null = null;
   favouriteSongs: LibraryItem[] | null = null;
   loading = true;
   errorMessage = '';
 
-  constructor(private apiService: ApiService) { }
+  private librarySubscription: Subscription = new Subscription;
 
-  // Lifecycle hooks
-  ngOnInit(): void {
-    this.apiService.getFormattedLibraryItems().subscribe({
-      next: (libraryItems) => {
+  constructor(private libraryService: LibraryService) { }
+
+    ngOnInit(): void {
+      this.librarySubscription = this.libraryService.library$.subscribe({
+        next: (libraryItems) => {
+        if (!libraryItems) {
+          this.loading = false;
+          return;
+        }
+  
         // Set the library items
-        const result = libraryItems;
-
-        // Set the library items
-        this.libraryItems = result.filter(item => item.type !== 'Favorites');
-
+        this.libraryItems = libraryItems.filter(item => item.type !== 'Favorites');
+  
         // Filter the favourite songs playlist
-        this.favouriteSongs = result.filter(item => item.type === 'Favorites');
-
+        this.favouriteSongs = libraryItems.filter(item => item.type === 'Favorites');
+  
         // Set the loading state to false
         this.loading = false;
       },
@@ -50,5 +56,9 @@ export class LibraryComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.librarySubscription.unsubscribe();
   }
 }

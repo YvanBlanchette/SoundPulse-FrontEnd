@@ -1,0 +1,42 @@
+<div class="w-[90%] max-w-xl mx-auto h-screen flex flex-col items-center justify-center text-gray-100">
+  <h1 class="text-[2.5rem] font-bold tracking-wider bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent">Bienvenue sur SoundPulse</h1>
+  <p class="text-base">Connectez-vous pour commencer à écouter votre musique préférée!</p>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="w-full">
+    
+    <div class="flex flex-col gap-1 mt-8 w-full">
+      <div class="flex gap-4 items-baseline">
+        <label for="email">Courriel <span class="text-red-500">*</span></label>
+        <div *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.dirty || loginForm.get('email')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="loginForm.get('email')?.errors?.['required']">
+            L'adresse courriel est requise.
+          </div>
+          <div *ngIf="loginForm.get('email')?.errors?.['email']">
+            L'adresse courriel est invalide.
+          </div>
+        </div>
+      </div>
+
+      <input type="email" id="email" formControlName="email" placeholder="Entrez votre adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="email" />
+      
+    </div>
+
+    <div class="flex flex-col gap-1 mt-6 w-full">
+      <div class="flex gap-4 items-baseline">
+        <label for="password">Mot de passe <span class="text-red-500">*</span></label>
+        <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)" class="text-red-500 text-xs">
+          <div *ngIf="loginForm.get('password')?.errors?.['required']">
+            Le mot de passe est requis.
+          </div>
+        </div>
+      </div>
+
+      <input type="password" id="password" formControlName="password" placeholder="Entrez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="current-password" />
+      
+    </div>
+
+    <button type="submit" [disabled]="!loginForm.valid" class="mt-12 w-full py-2 bg-gradient-to-br from-[#00C4FF] to-[#F700FD] rounded-md font-medium tracking-wide uppercase hover:opacity-85 transition-opacity duration-300 cursor-pointer">se connecter</button>
+  </form>
+
+  <p class="mt-6 text-sm">Vous n'avez pas encore de compte? <span (click)="toggleRegistration()" class="text-[#00C4FF] hover:text-[#F700FD] cursor-pointer font-medium transition-all duration-300">Inscrivez-vous ici!</span></p>
+</div>

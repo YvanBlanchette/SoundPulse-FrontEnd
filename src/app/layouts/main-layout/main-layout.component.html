@@ -1,16 +1,15 @@
-<div class="w-screen h-screen flex flex-col bg-black overflow-hidden">
-  <!-- Page header -->
+<div class="w-screen h-screen flex flex-col justify-between bg-black overflow-hidden">
   <app-header class="h-[100px] w-full bg-black text-gray-100 px-6" />
-
+  
   <!-- Page content -->
-  <mat-sidenav-container class="mat-sidenav-container overflow-hidden bg-black" [hasBackdrop]="false" [autosize]="false">
+  <mat-sidenav-container class=" flex-1 mat-sidenav-container overflow-hidden bg-black" [hasBackdrop]="false" [autosize]="false">
     <!-- Sidebar -->
     <mat-sidenav #sidenav class="mat-sidenav overflow-hidden mg-6" [class.sidenav-open]="sidenav?.opened" [class.sidenav-closed]="!sidenav?.opened">
       <div class="mat-drawer-inner-container">
-        <app-sidebar class="overflow-hidden" />c
+        <app-sidebar class="overflow-hidden" />
       </div>
     </mat-sidenav>
-
+    
     <!-- Main content -->
     <mat-sidenav-content class="mat-sidenav-content overflow-hidden" [class.sidenav-open]="sidenav?.opened" [class.sidenav-closed]="!sidenav?.opened">
       <!-- Sidebar toggle button -->
@@ -22,12 +21,12 @@
           <i class="fa-solid fa-chevron-right text-xl"></i>
         }
       </button>
-
+      
       <!-- Content -->
-      <app-main />
+      <router-outlet></router-outlet>
     </mat-sidenav-content>
   </mat-sidenav-container>
-
+  
   <!-- Page footer -->
   <app-footer class="h-[80px] w-full bg-black text-gray-100 px-6" />
 </div>

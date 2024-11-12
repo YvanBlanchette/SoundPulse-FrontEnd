@@ -59,12 +59,10 @@ export class TrackPage {
 
   //! Function to get track details
   getTrackDetails(trackId: string): void {
-    console.log('Fetching track details for ID:', trackId);
     this.apiService
       .fetchTrackDetails(trackId)
       .subscribe({
         next: (response) => {
-          console.log('Track details response:', response);
           this.trackDetails = response;
           this.recommendedTracks = response.recommendations;
           this.isLoading = false;
@@ -93,7 +91,6 @@ export class TrackPage {
   public toggleFavourite(track: Track) {
     this.apiService.toggleFavourite(track).subscribe(
       (response) => {
-        console.log('Favourite toggled:', response);
       },
       (error) => {
         console.error('Error toggling favourite:', error);

@@ -1,4 +1,4 @@
-<button (click)="onSelectItem(item)" class="w-full flex items-center gap-3 hover:bg-[#1F1F1F] p-2 rounded-lg">
+<div (click)="onSelectItem(item)" class="relative w-full flex items-center gap-3 hover:bg-[#1F1F1F] p-2 rounded-lg cursor-pointer">
   <img 
     [src]="item.image[0].url" alt="{{item.name}}"
      alt="{{item.name}}" 
@@ -10,4 +10,10 @@
       @if(item.owner) {<span> - {{item.owner}}</span>}
     </p>
   </div>
-</button>
+
+  @if(item.type !== 'Favorites') {
+    <button (click)="removeLibraryItem(item.id)" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full hover:text-gray-300/30 text-gray-300/15 border hover:border-gray-300/30 border-gray-300/15 transition-all duration-300 flex items-center justify-center"  title="Supprimer de la bibliothèque">
+      <i class="fa-solid fa-minus text-xs"></i>
+    </button>
+  }
+  </div>

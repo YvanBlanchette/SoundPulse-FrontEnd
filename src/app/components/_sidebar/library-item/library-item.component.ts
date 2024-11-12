@@ -1,9 +1,11 @@
 //* Module imports
-import { Component, Input} from '@angular/core';
+import { ChangeDetectorRef, Component, Input} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 
 //* Interface imports
 import { LibraryItem } from '@/app/interfaces/library-item';
+import { LibraryService } from '@/app/services/library.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 @Component({
@@ -15,25 +17,37 @@ import { LibraryItem } from '@/app/interfaces/library-item';
 export class LibraryItemComponent {
   @Input() item!: LibraryItem;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private libraryService: LibraryService, private cdr: ChangeDetectorRef) { }
 
   onSelectItem(item: LibraryItem): void {
     switch (item.type) {
       case 'Favorites':
         this.router.navigate([`/favourites`]);
         break;
-      case 'Artiste':
+      case 'Artist':
         this.router.navigate([`/artists/${item.id}`]);
         break;
       case 'Album':
         this.router.navigate([`/albums/${item.id}`], { queryParams: { artistId: item.owner_id } });
         break;
-      case 'Liste de lecture':
+      case 'Playlist':
         this.router.navigate([`/playlists/${item.id}`]);
         break;
-      case 'Chanson':
+      case 'Track':
         this.router.navigate([`/tracks/${item.id}`]);
         break;
     }
+  }
+
+  removeLibraryItem(id: string): void {
+    this.libraryService.removeLibraryItem(id).subscribe({
+      next: (libraryItems) => {
+        this.cdr.detectChanges();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing library item:', error);
+        alert(`Failed to remove library item: ${error.error.message}`);
+      }
+    });
   }
 }

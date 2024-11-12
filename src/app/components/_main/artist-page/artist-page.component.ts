@@ -1,24 +1,27 @@
+import { retry, Subscription, timer } from 'rxjs';
+import { MatMenuModule } from '@angular/material/menu';
 import { NgClass, NgFor, NgIf } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';
+import { LibraryItem } from '@/app/interfaces/library-item';
 import { AlbumResponse } from '@/app/interfaces/album-response';
-import { ArtistResponse } from '@/app/interfaces/artist-response';
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 
 
 //* Service imports
 import { ApiService } from '@/app/services/api.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
+import { LibraryService } from '@/app/services/library.service';
 import { RoutingService } from '@/app/services/routing.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 
 //* Component imports
-import { MatMenuModule } from '@angular/material/menu';
-import { ProgressSpinnerComponent } from '../../_shared/progress-spinner/progress-spinner.component';
+import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
 
 
 @Component({
@@ -30,14 +33,13 @@ import { ProgressSpinnerComponent } from '../../_shared/progress-spinner/progres
     MatMenuModule,
     NgFor,
     NgIf,
-    NgClass
   ],
   templateUrl: './artist-page.component.html',
   styleUrl: './artist-page.component.css'
 })
 
 
-export class ArtistPage implements OnInit {
+export class ArtistPage implements OnInit, OnDestroy {
  // Properties
   artistId: string = '';
   isLoading: boolean = true;
@@ -60,11 +62,12 @@ export class ArtistPage implements OnInit {
     public routingService: RoutingService,
     private apiService: ApiService,
     private currentTrackService: CurrentTrackService,
+    private libraryService: LibraryService,
     private cdr: ChangeDetectorRef
   ) {}
   
   private _artistDetails: ExtendedArtistResponse | null | undefined = null;
-
+  private routeParamsSubscription: Subscription = new Subscription;
   
   @Input()
   set artistDetails(value: ExtendedArtistResponse | null | undefined) {
@@ -80,9 +83,8 @@ export class ArtistPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.routeParamsSubscription = this.route.params.subscribe(params => {
       this.artistId = params['id'];
-      console.log('Artist ID:', this.artistId);
       if (this.artistId) {
         this.getArtistDetails();
       } else {
@@ -91,6 +93,18 @@ export class ArtistPage implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.routeParamsSubscription.unsubscribe();
+    this.resetState();
+  }
+
+  resetState(): void {
+    this.artistDetails = null;
+    this.tracks = null;
+    this.albums = null;
+    this.isLoading = true;
+    this.error = null;
+  }
 
   isSelected(track: Track): boolean {
     return this.currentTrackService?.isSelected(track);
@@ -98,12 +112,21 @@ export class ArtistPage implements OnInit {
 
   // Function to fetch artist details
   getArtistDetails(): void {
+    this.isLoading = true;
+    const maxRetries = 5;
+    const initialRetryDelay = 500;
+  
     this.apiService
       .fetchArtistDetails(this.artistId)
+      .pipe(
+        retry({
+          count: maxRetries,
+          delay: (error, retryCount) => timer(initialRetryDelay * (retryCount + 1))
+        })
+      )
       .subscribe({
         next: (response) => {
           this.artistDetails = response;
-          console.log('Artist details: ', response);
           this.isLoading = false;
           this.cdr.detectChanges();
         },
@@ -131,7 +154,6 @@ export class ArtistPage implements OnInit {
   public toggleFavourite(track: Track) {
     this.apiService.toggleFavourite(track).subscribe(
       (response) => {
-        console.log('Favourite toggled:', response);
       },
       (error) => {
         console.error('Error toggling favourite:', error);
@@ -145,10 +167,40 @@ export class ArtistPage implements OnInit {
   }
 
   onSelectItem(id: string, artistId: string): void {
-        this.router.navigate([`/albums/${id}`], { queryParams: { artistId } });
+    this.router.navigate([`/albums/${id}`], { queryParams: { artistId } });
   }
 
   artistProfile(id: string): void {
-        this.router.navigate([`/artists/${id}`]);
+    this.router.navigate([`/artists/${id}`]);
+  }
+
+  addLibraryItem(): void {
+    if (this.artistDetails) {
+      const libraryItem: LibraryItem = {
+        id: this.artistDetails.id,
+        name: this.artistDetails.name,
+        type: 'Artist',
+        owner: this.artistDetails.name,
+        owner_id: this.artistDetails.id,
+        image: [
+          {
+            url: this.artistDetails.images[0].url,
+            width: this.artistDetails.images[0].width,
+            height: this.artistDetails.images[0].height
+          }
+        ],
+        created_at: this.artistDetails.created_at,
+        updated_at: this.artistDetails.updated_at
+      };
+  
+      this.libraryService.addLibraryItem(libraryItem).subscribe({
+        next: (item) => {
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error adding library item:', error);
+          alert(`Failed to add library item: ${error.error.message}`);
+        }
+      });
+    }
   }
 }

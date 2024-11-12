@@ -56,7 +56,6 @@ export class TracksTableComponent {
   public toggleFavourite(track: Track) {
     this.apiService.toggleFavourite(track).subscribe(
       (response) => {
-        console.log('Favourite toggled:', response);
       },
       (error) => {
         console.error('Error toggling favourite:', error);
