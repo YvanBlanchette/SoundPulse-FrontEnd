@@ -57,7 +57,6 @@ export class TracksTableComponent {
 
   //! Function to handle track click
   onTrackClick(track: Track): void {
-      console.log(track)
       this.currentTrackService?.selectTrack(track);
   }
 

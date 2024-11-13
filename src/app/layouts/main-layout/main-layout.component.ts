@@ -6,6 +6,7 @@ import { SidebarComponent } from '@/app/components/sidebar/sidebar.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { RouterOutlet } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-main-layout',
@@ -13,6 +14,7 @@ import { RouterOutlet } from '@angular/router';
   imports: [
     MatSidenavModule,
     MatButtonModule,
+    MatTooltipModule,
     RouterOutlet,
     HeaderComponent,
     SidebarComponent,

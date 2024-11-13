@@ -3,11 +3,12 @@ import { Subscription, Observable } from 'rxjs';
 import { FavouritesService } from '@/app/services/favourites.service';
 import { Track } from '@/app/interfaces/track';
 import { AsyncPipe, NgIf } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-favourites-button',
   standalone: true,
-  imports: [AsyncPipe, NgIf],
+  imports: [AsyncPipe, NgIf, MatTooltipModule],
   templateUrl: './favourites-button.component.html',
 })
 export class FavouritesButtonComponent implements OnInit {

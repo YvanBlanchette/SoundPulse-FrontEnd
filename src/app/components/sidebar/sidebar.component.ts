@@ -15,7 +15,6 @@ export class SidebarComponent {
   @Input() filter: string = 'all';
   
   onFilterChange(filter: string) {
-    console.log('SidebarComponent: Filter changed to', filter);
     this.filter = filter;
   }
 }
