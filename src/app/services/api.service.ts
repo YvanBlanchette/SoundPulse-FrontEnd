@@ -8,7 +8,6 @@ import { LibraryItem } from '@/app/interfaces/library-item';
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { SearchResults } from '@/app/interfaces/search-results';
-import { Track } from '@/app/interfaces/track';
 import { PlaylistResponse } from '@/app/interfaces/playlist-response';
 import { User } from '@/app/interfaces/user';
 import { FavouriteTrack } from '@/app/interfaces/favourite-track';
@@ -16,15 +15,6 @@ import { FavouriteTrackRequest } from '@/app/interfaces/favourite-track-request'
 
 //* Environment imports
 import { env } from '@/env/environment';
-
-//? Enum for item types
-enum ItemType {
-  Playlist = 'playlist',
-  Artist = 'artist',
-  Album = 'album',
-  Library = 'library',
-  NewAlbums = 'new-albums'
-}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {

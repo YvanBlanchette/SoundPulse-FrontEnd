@@ -1,27 +1,24 @@
-import { MatMenuModule } from '@angular/material/menu';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatTableModule } from '@angular/material/table';
-import { combineLatest, Subscription, Observable, retry, timer, of } from 'rxjs';
-import { AsyncPipe,NgFor, NgIf } from '@angular/common';
+import { retry, Subject, Subscription, takeUntil, timer } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OnInit, OnDestroy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 
-// Interface imports
+//* Interface imports
 import { Track } from '@/app/interfaces/track';
-import { LibraryItem } from '@/app/interfaces/library-item';
-import { AlbumResponse } from '@/app/interfaces/album-response';
+import { AlbumResponse, AlbumTrack } from '@/app/interfaces/album-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 
-// Service imports
+//* Service imports
 import { ApiService } from '@/app/services/api.service';
-import { RoutingService } from '@/app/services/routing.service';
 import { LibraryService } from '@/app/services/library.service';
-import { FavouritesService } from '@/app/services/favourites.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
+import { RoutingService } from '@/app/services/routing.service';
 
-// Component imports
+//* Component imports
+import { CollectionComponent } from "@/app/components/_shared/collection/collection.component";
+import { PageHeaderComponent } from "@/app/components/_shared/page-header/page-header.component";
+import { TracksTableComponent } from "@/app/components/_shared/tracks-table/tracks-table.component";
+import { PageOptionsComponent } from "@/app/components/_shared/page-options/page-options.component";
 import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
-import { FavouritesButtonComponent } from "@/app/components/_shared/favourites-button/favourites-button.component";
+import { NgIf } from '@angular/common';
 
 
 // Define the AlbumPage component
@@ -29,56 +26,44 @@ import { FavouritesButtonComponent } from "@/app/components/_shared/favourites-b
   selector: 'app-album-page',
   standalone: true,
   imports: [
-    MatTableModule,
     ProgressSpinnerComponent,
-    MatMenuModule,
-    NgFor,
-    NgIf,
-    AsyncPipe,
-    FavouritesButtonComponent
+    PageOptionsComponent,
+    PageHeaderComponent,
+    TracksTableComponent,
+    CollectionComponent,
 ],
   templateUrl: './album-page.component.html',
   styleUrls: ['./album-page.component.css'],
 })
 export class AlbumPage implements OnInit, OnDestroy {
-  // Component properties
   albumId: string = '';
   artistId: string = '';
   isLoading: boolean = true;
-  error: any = null;
-  tracks: any | null | undefined = null;
+  error: string | null = null;
+  tracks: Track[] = [];
   otherAlbums: AlbumResponse[] | null | undefined = null;
-  displayedColumns: string[] = [
-    'track_number',
-    'title',
-    'artist',
-    'duration',
-    'options',
-  ];
 
-  // Private album details property
-  private _albumDetails: ExtendedAlbumResponse | null | undefined = null;
+  // Private variables
+  private destroy$ = new Subject<void>();
   private routeParamsSubscription: Subscription = new Subscription;
+  private _albumDetails: ExtendedAlbumResponse | null | undefined = null;
+
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    public routingService: RoutingService,
-    public favouritesService: FavouritesService,
-    private apiService: ApiService,
-    public libraryService: LibraryService,
-    private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef,
-  ) {}
-
-  // Input property for album details
-  @Input()
+    private apiService: ApiService,
+    public routingService: RoutingService,
+    public libraryService: LibraryService,
+  ) { }
+  
   // Setter for album details
   set albumDetails(value: ExtendedAlbumResponse | null | undefined) {
     this._albumDetails = value;
     if (value !== null) {
-      this.tracks = value?.tracks?.items ?? [];
-      this.otherAlbums = value?.otherAlbums ?? [];
+      console.log(value?.tracks)
+      this.tracks = (value?.tracks.items ?? []) as unknown as Track[];
+      this.otherAlbums = value?.otherAlbums?.slice(0, 5) ?? [];
     }
   }
 
@@ -101,29 +86,29 @@ export class AlbumPage implements OnInit, OnDestroy {
     });
   }
 
+  // On Destroy component
   ngOnDestroy(): void {
+    // Unsubscribe and reset states
     this.routeParamsSubscription.unsubscribe();
     this.resetState();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  // Reset component states
   resetState(): void {
     this.albumDetails = null;
-    this.tracks = null;
+    this.tracks = [];
     this.otherAlbums = null;
     this.isLoading = true;
     this.error = null;
   }
 
-  // Check if a track is selected
-  isSelected(track: Track): boolean {
-    return this.currentTrackService?.isSelected(track);
-  }
-
   // Fetch album details from API
-getAlbumDetails(): void {
-  this.isLoading = true;
-  const maxRetries = 5;
-  const initialRetryDelay = 500;
+  getAlbumDetails(): void {
+    this.isLoading = true;
+    const maxRetries = 5;
+    const initialRetryDelay = 500;
 
   this.apiService
     .fetchAlbumDetails(this.albumId, this.artistId)
@@ -146,71 +131,6 @@ getAlbumDetails(): void {
         this.error = error;
         this.isLoading = false;
       },
-    });
-}
-
-  // Format track duration as MM:SS
-  durationFormatter(durationMs: number): string {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  // Handle track click
-  onTrackClick(track: Track): void {
-    this.currentTrackService?.selectTrack(track);
-  }
-
-  // Navigate to artist profile
-  artistProfile(id: string): void {
-    this.router.navigate([`/artists/${id}`]);
-  }
-
-  // Navigate to album page with artist ID as query parameter
-  onSelectItem(id: string, artistId: string): void {
-    this.router.navigate([`/albums/${id}`], { queryParams: { artistId } });
-  }
-
-  addLibraryItem(): void {
-    if (this.albumDetails) {
-      const libraryItem: LibraryItem = {
-        id: this.albumDetails.id,
-        name: this.albumDetails.name,
-        type: 'Album',
-        owner: this.albumDetails.artists[0].name,
-        owner_id: this.albumDetails.artists[0].id,
-        image: [
-          {
-            url: this.albumDetails.images[0].url,
-            width: this.albumDetails.images[0].width,
-            height: this.albumDetails.images[0].height
-          }
-        ],
-        created_at: this.albumDetails.release_date,
-        updated_at: this.albumDetails.release_date
-      };
-  
-      this.libraryService.addLibraryItem(libraryItem).subscribe({
-        next: (item) => {
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error adding library item:', error);
-          alert(`Failed to add library item: ${error.error.message}`);
-        }
-      });
-    }
-  }
-
-   //! Function to remove library item
-   removeLibraryItem(id: string): void {
-    this.libraryService.removeLibraryItem(id).subscribe({
-      next: (libraryItems) => {
-        this.cdr.detectChanges();
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error removing library item:', error);
-        alert(`Failed to remove library item: ${error.error.message}`);
-      }
     });
   }
 }

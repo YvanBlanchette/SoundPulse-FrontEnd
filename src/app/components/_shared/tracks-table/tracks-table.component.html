@@ -1,0 +1,55 @@
+<!-- Tracks table -->
+<table mat-table [dataSource]="this.tracks">
+  <!-- Index column -->
+  <ng-container matColumnDef="index">
+    <th mat-header-cell *matHeaderCellDef>#</th>
+    <td mat-cell *matCellDef="let track; let i = index" (click)="onTrackClick(track)" class=""> 
+      {{ i + 1 }} 
+    </td>
+  </ng-container>
+
+    <!-- Thumbnail column -->
+    <ng-container  matColumnDef="thumbnail">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
+        <img *ngIf="track.album?.images" src="{{ track.album.images[0].url }}" alt="" class="w-12 h-12 rounded">
+      </td>
+    </ng-container>
+
+  <!-- Name column -->
+  <ng-container matColumnDef="title">
+    <th mat-header-cell *matHeaderCellDef>Titre</th>
+    <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
+      <a (click)="this.routingService.navigateTo(routingService.Categories.track, track.id)" class="cursor-pointer hover:underline">{{ track.name }}</a></td>
+  </ng-container>
+
+  <!-- Artists column -->
+  <ng-container matColumnDef="artist">
+    <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
+    <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track)">
+      <span *ngFor="let artist of track.artists; let i = index">
+        <a (click)="this.routingService.navigateTo(routingService.Categories.artist, artist.id)" class="cursor-pointer hover:underline">{{ artist.name }}</a><span *ngIf="i < track.artists.length - 1">, </span>
+      </span>
+    </td>
+  </ng-container>
+
+  <!-- Duration column -->
+  <ng-container matColumnDef="duration">
+    <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
+    <td mat-cell *matCellDef="let track" class="py-4 relative" (click)="onTrackClick(track)"> 
+      {{ durationFormatter(track.duration_ms) }}
+    </td>
+  </ng-container>
+
+  <!-- Options -->
+  <ng-container matColumnDef="options">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let track" class="py-4 w-24">
+      <app-favourites-button [track]="track" />
+    </td>
+  </ng-container>
+
+  <!-- Table rows -->
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer">
+</table>

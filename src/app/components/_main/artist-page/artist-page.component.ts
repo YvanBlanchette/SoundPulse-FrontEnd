@@ -1,41 +1,34 @@
-import { retry, Subscription, timer } from 'rxjs';
-import { MatMenuModule } from '@angular/material/menu';
-import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { retry, Subject, Subscription, takeUntil, timer } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 //* Interface imports
 import { Track } from '@/app/interfaces/track';
-import { LibraryItem } from '@/app/interfaces/library-item';
 import { AlbumResponse } from '@/app/interfaces/album-response';
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
-
 
 //* Service imports
 import { ApiService } from '@/app/services/api.service';
 import { LibraryService } from '@/app/services/library.service';
 import { RoutingService } from '@/app/services/routing.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
-
 
 //* Component imports
+import { CollectionComponent } from "@/app/components/_shared/collection/collection.component";
+import { PageHeaderComponent } from "@/app/components/_shared/page-header/page-header.component";
+import { TracksTableComponent } from "@/app/components/_shared/tracks-table/tracks-table.component";
+import { PageOptionsComponent } from "@/app/components/_shared/page-options/page-options.component";
 import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
-import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 
 @Component({
   selector: 'app-artist-page',
   standalone: true,
   imports: [
-    MatTableModule,
     ProgressSpinnerComponent,
-    MatMenuModule,
-    NgFor,
-    NgIf,
-    AsyncPipe,
-    FavouritesButtonComponent
+    TracksTableComponent,
+    CollectionComponent,
+    PageHeaderComponent,
+    PageOptionsComponent
 ],
   templateUrl: './artist-page.component.html',
   styleUrl: './artist-page.component.css'
@@ -43,168 +36,112 @@ import { FavouritesButtonComponent } from "../../_shared/favourites-button/favou
 
 
 export class ArtistPage implements OnInit, OnDestroy {
- // Properties
+  // Artist data
   artistId: string = '';
+  // Loading state
   isLoading: boolean = true;
-  isVerified: boolean = true;
-  error: any = null;
-  tracks: any | null | undefined = null;
+  // Error state
+  error: string | null = null;
+  // Tracks data
+  tracks: Track[] = [];
+  // Albums data
   albums: AlbumResponse[] | null | undefined = null;
-  displayedColumns: string[] = [
-    'index',
-    'thumbnail',
-    'title',
-    'artist',
-    'duration',
-    'options',
-  ];
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    public routingService: RoutingService,
-    private apiService: ApiService,
-    private currentTrackService: CurrentTrackService,
-    public libraryService: LibraryService,
-    private cdr: ChangeDetectorRef
-  ) {}
-  
-  private _artistDetails: ExtendedArtistResponse | null | undefined = null;
+  // Private variables
+  private destroy$ = new Subject<void>();
   private routeParamsSubscription: Subscription = new Subscription;
-  
-  @Input()
+  private _artistDetails: ExtendedArtistResponse | null | undefined = null;
+
+  // Constructor with dependencie injections
+  constructor(
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private apiService: ApiService,
+    public routingService: RoutingService,
+    public libraryService: LibraryService,
+  ) {}
+
+  // Setter for the artist details
   set artistDetails(value: ExtendedArtistResponse | null | undefined) {
     this._artistDetails = value;
     if (value !== null) {
-      this.tracks = value?.topTracks ?? [];
+      this.tracks = (value?.topTracks ?? []) as Track[];
       this.albums = value?.albums?.slice(0, 5) ?? [];
     }
   }
 
+  // Getter for the artist details
   get artistDetails(): ExtendedArtistResponse | null | undefined {
     return this._artistDetails;
   }
 
+  // On Initialize component
   ngOnInit(): void {
-    this.routeParamsSubscription = this.route.params.subscribe(params => {
+    // Subscribe to route params and fetch artist details
+    this.routeParamsSubscription = this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.artistId = params['id'];
       if (this.artistId) {
         this.getArtistDetails();
       } else {
         console.error('Missing artist Id parameter');
+        this.error = 'Id de l\'artiste est manquant';
       }
     });
-   
   }
 
+  // On Destroy component
   ngOnDestroy(): void {
+    // Unsubscribe and reset states
     this.routeParamsSubscription.unsubscribe();
     this.resetState();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  // Reset component states
   resetState(): void {
     this.artistDetails = null;
-    this.tracks = null;
+    this.tracks = [];
     this.albums = null;
     this.isLoading = true;
     this.error = null;
   }
 
-  isSelected(track: Track): boolean {
-    return this.currentTrackService?.isSelected(track);
-  }
-
-  //! Function to fetch artist details
+  // Fetch artist details
   getArtistDetails(): void {
+    // Set loading state to true
     this.isLoading = true;
+
+    // Maximum permitted retries
     const maxRetries = 5;
+
+    // Delay between retries
     const initialRetryDelay = 500;
-  
+
+    // Fetch artist details from my API
     this.apiService
       .fetchArtistDetails(this.artistId)
       .pipe(
         retry({
           count: maxRetries,
-          delay: (error, retryCount) => timer(initialRetryDelay * (retryCount + 1))
-        })
+          delay: (retryCount) => timer(initialRetryDelay * (retryCount + 1))
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe({
         next: (response) => {
+          // Update artist details
           this.artistDetails = response;
+          // Set loading state to false
           this.isLoading = false;
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error fetching artist details: ', error);
-          this.error = error;
+          // Handle error
+          console.error('Error fetching artist details:', error);
+          this.error = error.message;
           this.isLoading = false;
         },
       });
-  }
-
-   //! Function to format tracks duration as MM:SS
-   durationFormatter(durationMs: number): string {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  //! Function to handle track click
-  onTrackClick(track: Track): void {
-    this.currentTrackService?.selectTrack(track);
-  }
-
-  onSelectItem(id: string, artistId: string): void {
-    this.router.navigate([`/albums/${id}`], { queryParams: { artistId } });
-  }
-
-  artistProfile(id: string): void {
-    this.router.navigate([`/artists/${id}`]);
-  }
-
-  
-  //! Function to add library item
-  addLibraryItem(): void {
-    if (this.artistDetails) {
-      const libraryItem: LibraryItem = {
-        id: this.artistDetails.id,
-        name: this.artistDetails.name,
-        type: 'Artist',
-        owner: this.artistDetails.name,
-        owner_id: this.artistDetails.id,
-        image: [
-          {
-            url: this.artistDetails.images[0].url,
-            width: this.artistDetails.images[0].width,
-            height: this.artistDetails.images[0].height
-          }
-        ],
-        created_at: this.artistDetails.created_at,
-        updated_at: this.artistDetails.updated_at
-      };
-  
-      this.libraryService.addLibraryItem(libraryItem).subscribe({
-        next: (item) => {
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error adding library item:', error);
-          alert(`Failed to add library item: ${error.error.message}`);
-        }
-      });
-    }
-  }
-
-
-  //! Function to remove library item
-  removeLibraryItem(id: string): void {
-    this.libraryService.removeLibraryItem(id).subscribe({
-      next: (libraryItems) => {
-        this.cdr.detectChanges();
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error removing library item:', error);
-        alert(`Failed to remove library item: ${error.error.message}`);
-      }
-    });
   }
 }

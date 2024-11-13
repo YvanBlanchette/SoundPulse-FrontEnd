@@ -54,7 +54,8 @@ interface AlbumTracks {
   total: number;
 }
 
-interface AlbumTrack {
+export interface AlbumTrack {
+  album: null;
   artists: AlbumArtist[];
   available_markets: string[];
   disc_number: number;
@@ -84,6 +85,10 @@ interface AlbumTrack {
   type: string;
   uri: string;
   is_local: boolean;
+  external_ids: {
+    isrc: string;
+  },
+  popularity: number;
 }
 
 interface AlbumCopyright {

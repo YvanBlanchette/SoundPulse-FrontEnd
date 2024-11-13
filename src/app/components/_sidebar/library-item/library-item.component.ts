@@ -23,7 +23,7 @@ export class LibraryItemComponent {
 
   onSelectItem(item: LibraryItem): void {
     switch (item.type) {
-      case 'favorites':
+      case 'Favourites':
         this.router.navigate([`/favourites`]);
         break;
       case 'Artist':

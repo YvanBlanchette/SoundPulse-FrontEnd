@@ -1,0 +1,42 @@
+<div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
+  <img [src]="itemDetails?.images?.[0]?.url" [alt]="itemDetails?.name" class="max-w-[175px] aspect-square object-cover rounded{{itemDetails?.type === 'artist' ? '-full' : ''}} mr-6">
+  <div class="flex flex-col gap-1">
+    <!-- Display verified badge -->
+    @if(libraryService.isItemInLibrary(itemDetails.id) | async) {
+      <div class="mb-1">
+        <span class="ml-4 relative">
+          <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
+          <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
+        </span>
+        <span class="ml-5 font-medium tracking-wide">Ajouté à la bibliothèque</span>
+      </div>
+    }
+    <!-- Display item name -->
+    <h1 class="text-6xl font-bold tracking-wider mt-auto">{{ itemDetails?.name }}</h1>
+
+    <!-- MetaData -->
+    <div class="flex items-center gap-12">
+     @if(itemDetails?.type === 'artist') {
+       <p class="ml-2 font-medium">{{ itemDetails?.followers?.total?.toLocaleString('fr-CA') }} abonnés</p>
+     }
+     @if(itemDetails?.type === 'album') {
+      <p class="text-gray-300 font-medium flex items-center">
+        <a (click)="this.routingService.navigateTo(routingService.Categories.artist, itemDetails?.artists?.[0]?.id || '')" class="cursor-pointer hover:underline">{{itemDetails?.artists?.[0]?.name}}</a>
+        <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+        <span>{{ itemDetails?.release_date?.slice(0, 4) }}</span> 
+        <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+        <span>{{ itemDetails?.total_tracks }} chansons</span>
+      </p>
+     }
+     @if(itemDetails?.type === 'playlist') {
+      <p class="text-gray-300 font-medium flex items-center">
+        <span>{{ itemDetails?.owner?.display_name}}</span>
+        <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+        <span>{{  itemDetails?.tracks?.total }} chansons</span>
+        <span class="text-3xl font-extrabold mx-3">&#183;</span> 
+        <span>{{ ( itemDetails?.followers?.total)?.toLocaleString('fr-CA') }} abonnés</span>
+      </p>
+     }
+    </div>
+  </div>
+</div>

@@ -31,13 +31,11 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
   filteredLibraryItems: LibraryItem[] | null = null;
 
   constructor(private libraryService: LibraryService, private cdr: ChangeDetectorRef) { 
-    console.log('LibraryComponent: Constructor');
   }
 
   private ngUnsubscribe = new Subject();
 
   ngOnInit(): void {
-    console.log('LibraryComponent: Initial filter is', this.filter);
     this.cdr.detectChanges();
 
     this.libraryService.library$.pipe(
@@ -61,7 +59,6 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filter']) {
-      console.log('Filter changed to', this.filter);
       this.filterLibraryItems();
     }
   }
