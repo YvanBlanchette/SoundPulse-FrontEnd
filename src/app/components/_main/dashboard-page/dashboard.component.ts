@@ -12,6 +12,8 @@ import { Track } from '@/app/interfaces/track';
 import { MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
 import { EditProfileFormComponent } from "../_dashboard/edit-profile-form/edit-profile-form.component";
+import { FavouritesService } from '@/app/services/favourites.service';
+import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -25,7 +27,8 @@ import { EditProfileFormComponent } from "../_dashboard/edit-profile-form/edit-p
     NgFor,
     NgIf,
     NgClass,
-    EditProfileFormComponent
+    EditProfileFormComponent,
+    FavouritesButtonComponent
 ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -48,7 +51,7 @@ export class DashboardPage implements OnInit {
     private userService: UserService,
     private router: Router,
     public routingService: RoutingService,
-    private apiService: ApiService,
+    public favouritesService: FavouritesService,
     private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef
   ) {
@@ -70,7 +73,7 @@ export class DashboardPage implements OnInit {
 
   ngOnInit(): void {
     this.user$ = this.userService.getUser();
-    this.getFavourites();
+    this.getFavouriteSongs();
   }
   
 
@@ -78,62 +81,46 @@ export class DashboardPage implements OnInit {
     return this.currentTrackService?.isSelected(track);
   }
 
-  // Function to fetch playlist details
-  getFavourites(): void {
-    this.apiService
-      .fetchFormattedFavourites()
-      .subscribe({
-        next: (response) => {
-          this.favourites = response;
-          this.tracks = this.favourites;
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          console.error('Error fetching playlist details: ', error);
-          this.error = error;
-          this.isLoading = false;
-        },
-      });
+  //! Function to fetch playlist details
+  getFavouriteSongs(): void {
+    this.favouritesService.getFavouriteTracks().subscribe({
+      next: (favouriteTracks) => {
+        this.tracks = favouriteTracks;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error fetching favourite tracks: ', error);
+        this.error = error;
+        this.isLoading = false;
+      },
+    });
   }
 
-   // Function to format tracks duration as MM:SS
+   //! Function to format tracks duration as MM:SS
    durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Function to handle track click
+  //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService?.selectTrack(track);
   }
 
-  // Function to toggle favourites
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
-  }
-
-  // Function to check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
-  }
-
+  //! Function to navigate to album page
   onSelectItem(id: string, playlistId: string): void {
-        this.router.navigate([`/albums/${id}`], { queryParams: { playlistId } });
-  }
+    this.router.navigate([`/albums/${id}`], { queryParams: { playlistId } });
+}
 
+  //! Function to navigate to artist page
   artistProfile(id: string): void {
-        this.router.navigate([`/artists/${id}`]);
+      this.router.navigate([`/artists/${id}`]);
   }
 
+  //! Function to toggle edit mode
   toggleEditMode(): void {
-    this.isEditMode = !this.isEditMode;
+  this.isEditMode = !this.isEditMode;
   }
 }

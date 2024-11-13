@@ -1,4 +1,4 @@
 <div class="overflow-hidden">
-  <app-header class="h-[80px] w-full bg-[#121213] text-gray-100" />
-  <app-library class="flex-1 h-full w-full bg-[#121213] text-gray-100" />
+  <app-header (filterChange)="onFilterChange($event)" class="h-[80px] w-full bg-[#121213] text-gray-100" />
+  <app-library [filter]="filter" class="flex-1 h-full w-full bg-[#121213] text-gray-100"></app-library>
 </div>

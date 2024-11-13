@@ -4,7 +4,7 @@
     }
 
   <!-- Show loading indicatior while fetching the library items -->
-  @if(loading) {
+  @if(isLoading) {
     <div class="flex items-center justify-center gap-2 h-full text-gray-100 text-xl">
       <i class="fa-solid fa-spinner animate-spin text-2xl"></i>
       Chargement...
@@ -19,8 +19,10 @@
   }
 
   <!-- Show library items -->
-  @for (item of libraryItems; track item.id) {
-    <app-library-item [item]="item" />
+  @if(filteredLibraryItems) {
+    @for (item of filteredLibraryItems; track item.id) {
+      <app-library-item  [item]="item" />
+    }
   }
 
 </div>

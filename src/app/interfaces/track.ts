@@ -17,11 +17,10 @@ export interface Track {
   is_playable: boolean;
   name: string;
   popularity: number;
-  preview_url: string | null;
+  preview_url: string;
   track_number: number;
   type: string;
   uri: string;
   album: Album;
-  isFavourite?: boolean;
   rating?: number;
 }

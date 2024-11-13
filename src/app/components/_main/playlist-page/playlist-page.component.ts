@@ -1,4 +1,4 @@
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from '@angular/core';
@@ -22,6 +22,7 @@ import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spin
 import { LibraryItem } from '@/app/interfaces/library-item';
 import { LibraryService } from '@/app/services/library.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 
 @Component({
@@ -33,8 +34,9 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatMenuModule,
     NgFor,
     NgIf,
-    NgClass
-  ],
+    AsyncPipe,
+    FavouritesButtonComponent
+],
   templateUrl: './playlist-page.component.html',
   styleUrl: './playlist-page.component.css'
 })
@@ -63,7 +65,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public routingService: RoutingService,
     private apiService: ApiService,
-    private libraryService: LibraryService,
+    public libraryService: LibraryService,
     private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -111,7 +113,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     return this.currentTrackService?.isSelected(track);
   }
 
-  // Function to fetch playlist details
+  //! Function to fetch playlist details
   // Fetch playlist details from API
 getPlaylistDetails(): void {
   this.isLoading = true;
@@ -142,33 +144,18 @@ getPlaylistDetails(): void {
     });
 }
 
-   // Function to format tracks duration as MM:SS
+   //! Function to format tracks duration as MM:SS
    durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Function to handle track click
+  //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService?.selectTrack(track);
   }
 
-  // Function to toggle favourites
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
-  }
-
-  // Function to check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
-  }
 
   onSelectItem(id: string, playlistId: string): void {
     this.router.navigate([`/albums/${id}`], { queryParams: { playlistId } });
@@ -178,6 +165,8 @@ getPlaylistDetails(): void {
     this.router.navigate([`/artists/${id}`]);
   }
 
+
+  //! Function to add album to the library
   addLibraryItem(): void {
     if (this.playlistDetails) {
       const libraryItem: LibraryItem = {
@@ -206,5 +195,19 @@ getPlaylistDetails(): void {
         }
       });
     }
+  }
+
+
+   //! Function to remove album from library
+   removeLibraryItem(id: string): void {
+    this.libraryService.removeLibraryItem(id).subscribe({
+      next: (libraryItems) => {
+        this.cdr.detectChanges();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing library item:', error);
+        alert(`Failed to remove library item: ${error.error.message}`);
+      }
+    });
   }
 }

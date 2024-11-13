@@ -1,6 +1,6 @@
 import { retry, Subscription, timer } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -22,6 +22,7 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 
 //* Component imports
 import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
+import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 
 @Component({
@@ -33,7 +34,9 @@ import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spin
     MatMenuModule,
     NgFor,
     NgIf,
-  ],
+    AsyncPipe,
+    FavouritesButtonComponent
+],
   templateUrl: './artist-page.component.html',
   styleUrl: './artist-page.component.css'
 })
@@ -62,7 +65,7 @@ export class ArtistPage implements OnInit, OnDestroy {
     public routingService: RoutingService,
     private apiService: ApiService,
     private currentTrackService: CurrentTrackService,
-    private libraryService: LibraryService,
+    public libraryService: LibraryService,
     private cdr: ChangeDetectorRef
   ) {}
   
@@ -91,6 +94,7 @@ export class ArtistPage implements OnInit, OnDestroy {
         console.error('Missing artist Id parameter');
       }
     });
+   
   }
 
   ngOnDestroy(): void {
@@ -110,7 +114,7 @@ export class ArtistPage implements OnInit, OnDestroy {
     return this.currentTrackService?.isSelected(track);
   }
 
-  // Function to fetch artist details
+  //! Function to fetch artist details
   getArtistDetails(): void {
     this.isLoading = true;
     const maxRetries = 5;
@@ -138,32 +142,16 @@ export class ArtistPage implements OnInit, OnDestroy {
       });
   }
 
-   // Function to format tracks duration as MM:SS
+   //! Function to format tracks duration as MM:SS
    durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Function to handle track click
+  //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService?.selectTrack(track);
-  }
-
-  // Function to toggle favourites
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
-  }
-
-  // Function to check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
   }
 
   onSelectItem(id: string, artistId: string): void {
@@ -174,6 +162,8 @@ export class ArtistPage implements OnInit, OnDestroy {
     this.router.navigate([`/artists/${id}`]);
   }
 
+  
+  //! Function to add library item
   addLibraryItem(): void {
     if (this.artistDetails) {
       const libraryItem: LibraryItem = {
@@ -202,5 +192,19 @@ export class ArtistPage implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+
+  //! Function to remove library item
+  removeLibraryItem(id: string): void {
+    this.libraryService.removeLibraryItem(id).subscribe({
+      next: (libraryItems) => {
+        this.cdr.detectChanges();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing library item:', error);
+        alert(`Failed to remove library item: ${error.error.message}`);
+      }
+    });
   }
 }

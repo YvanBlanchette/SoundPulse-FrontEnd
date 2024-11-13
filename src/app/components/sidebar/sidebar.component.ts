@@ -1,5 +1,5 @@
 // sidebar.component.ts
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { HeaderComponent } from "@/app/components/_sidebar/header/header.component";
 import { LibraryComponent } from "@/app/components/_sidebar/library/library.component";
 
@@ -12,4 +12,10 @@ import { LibraryComponent } from "@/app/components/_sidebar/library/library.comp
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent {
+  @Input() filter: string = 'all';
+  
+  onFilterChange(filter: string) {
+    console.log('SidebarComponent: Filter changed to', filter);
+    this.filter = filter;
+  }
 }

@@ -1,27 +1,36 @@
-import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
-import { Track } from '@/app/interfaces/track';
-import { ApiService } from '@/app/services/api.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
-import { RoutingService } from '@/app/services/routing.service';
-import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { NgFor, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
-import { Router } from '@angular/router';
+
+//* Service imports
+import { ApiService } from '@/app/services/api.service';
+import { RoutingService } from '@/app/services/routing.service';
+import { FavouritesService } from '@/app/services/favourites.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
+
+//* Interface imports
+import { Track } from '@/app/interfaces/track';
+
+//* Component imports
+import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
+import { FavouritesButtonComponent } from "@/app/components/_shared/favourites-button/favourites-button.component";
 
 @Component({
   selector: 'app-tracks-table',
   standalone: true,
-  imports: [    MatTableModule,
-    ProgressSpinnerComponent,
+  imports: [
+    MatTableModule,
     MatMenuModule,
-    NgForOf,
     NgIf,
-    NgClass],
+    FavouritesButtonComponent
+],
   templateUrl: './tracks-table.component.html',
-  styleUrl: './tracks-table.component.css'
+  styleUrls: ['./tracks-table.component.css']
 })
-export class TracksTableComponent {
+export class TracksTableComponent implements OnInit, OnDestroy {
   @Input() dataSource: any;
   displayedColumns:any = [
     'index',
@@ -32,40 +41,43 @@ export class TracksTableComponent {
     'options',
   ];
 
-  
   constructor(
     public currentTrackService: CurrentTrackService,
     public routingService: RoutingService,
+    public favouritesService: FavouritesService,
     private apiService: ApiService,
     private router: Router
   ) { }
 
-    // Function to handle track click
-    onTrackClick(track: Track): void {
-      this.currentTrackService?.selectTrack(track);
+  ngOnInit(): void { }
+
+  ngOnDestroy(): void { }
+
+  //! Function to handle track click
+  onTrackClick(track: Track): void {
+    this.currentTrackService?.selectTrack(track);
   }
-  
-  // Function to format tracks duration as MM:SS
+
+  //! Function to format tracks duration as MM:SS
   durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Function to toggle favourites
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
+  //! Function to add a song to favourites
+  public addFavouriteSong(track: Track): void {
+    this.favouritesService.addFavourite(track);
   }
 
-  // Function to check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
+  //! Function to remove a song to favourites
+  removeFavourite(track: Track): void {
+    this.favouritesService.removeFavourite(track);
+  }
+
+  //! Function to check if a track is a favourite
+  isItemInFavourite(track: Track): Observable<boolean> {
+    return this.favouritesService.isFavourite(track);
   }
 
   artistProfile(id: string): void {

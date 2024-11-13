@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, catchError, throwError, ReplaySubject, filter, switchMap } from 'rxjs';
+import { Observable, tap, catchError, throwError, ReplaySubject, filter, switchMap, map } from 'rxjs';
 import { ApiService } from './api.service';
-import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Library } from '@/app/interfaces/library';
 import { LibraryItem } from '../interfaces/library-item';
 
 @Injectable({
@@ -15,21 +13,24 @@ export class LibraryService {
 
   constructor(
     private apiService: ApiService,
-    private router: Router,
   ) {
     this.initLibrary();
   }
 
   //! Function to initialize library
   private initLibrary(): void {
-    this.apiService.getFormattedLibraryItems().subscribe((response: LibraryItem[]) => {
-      this.librarySubject.next(response);
-    }, (error: HttpErrorResponse) => {
-      console.error('Error fetching user:', error);
+    this.apiService.getFormattedLibraryItems().subscribe({
+      next: (response: LibraryItem[]) => {
+        this.librarySubject.next(response);
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error fetching user:', error);
+      }
     });
   }
 
- //! Function to get library observable
+  
+//! Function to get library observable
 getLibraryItems(): Observable<LibraryItem[]> {
   return this.library$.pipe(
     tap((library) => {
@@ -45,6 +46,8 @@ getLibraryItems(): Observable<LibraryItem[]> {
   );
 }
 
+  
+//! Function to add item to library
 addLibraryItem(item: LibraryItem): Observable<LibraryItem[]> {
   return this.apiService.addLibraryItem(item).pipe(
     switchMap(() => this.apiService.getLibraryItems()),
@@ -58,8 +61,9 @@ addLibraryItem(item: LibraryItem): Observable<LibraryItem[]> {
   );
 }
 
-removeLibraryItem(id: string): Observable<LibraryItem[]> {
 
+//! Function to remove item from library
+removeLibraryItem(id: string): Observable<LibraryItem[]> {
   return this.apiService.removeLibraryItem(id).pipe(
     switchMap((response) => {
       return this.apiService.getLibraryItems();
@@ -72,5 +76,13 @@ removeLibraryItem(id: string): Observable<LibraryItem[]> {
       return throwError(() => new Error(`Failed to remove library item: ${error.error.message}`));
     })
   );
-}
+  }
+  
+
+  //! Function to check if item is in library
+  isItemInLibrary(id: string): Observable<boolean> {
+    return this.library$.pipe(
+      map((libraryItems) => libraryItems?.some((item) => item.id === id) ?? false)
+    );
+  }
 }

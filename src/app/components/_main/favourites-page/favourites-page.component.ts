@@ -17,6 +17,8 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { ProgressSpinnerComponent } from '../../_shared/progress-spinner/progress-spinner.component';
 import { RoutingService } from '@/app/services/routing.service';
+import { FavouritesService } from '@/app/services/favourites.service';
+import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 
 @Component({
@@ -28,8 +30,8 @@ import { RoutingService } from '@/app/services/routing.service';
     MatMenuModule,
     NgFor,
     NgIf,
-    NgClass
-  ],
+    FavouritesButtonComponent
+],
   templateUrl: './favourites-page.component.html',
   styleUrl: './favourites-page.component.css'
 })
@@ -37,7 +39,7 @@ import { RoutingService } from '@/app/services/routing.service';
 
 export class FavouritesPage implements OnInit {
   // Properties
-  playlistName: string = 'Vos Chansons favorites';
+  playlistName: string = 'Vos Chansons favourites';
   playlistId: string = '';
   playlistBackground: string = 'https://images.unsplash.com/photo-1675544050566-c4be432d0418?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
   isLoading: boolean = true;
@@ -54,7 +56,7 @@ export class FavouritesPage implements OnInit {
   constructor(
     private router: Router,
     public routingService: RoutingService,
-    private apiService: ApiService,
+    public favouritesService: FavouritesService,
     private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -75,7 +77,7 @@ export class FavouritesPage implements OnInit {
 
 
   ngOnInit(): void {
-        this.getFavourites();
+        this.getFavouriteSongs();
   }
 
 
@@ -83,51 +85,34 @@ export class FavouritesPage implements OnInit {
     return this.currentTrackService?.isSelected(track);
   }
 
-  // Function to fetch playlist details
-  getFavourites(): void {
-    this.apiService
-      .fetchFormattedFavourites()
-      .subscribe({
-        next: (response) => {
-          this.favourites = response;
-          this.tracks = this.favourites;
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          console.error('Error fetching playlist details: ', error);
-          this.error = error;
-          this.isLoading = false;
-        },
-      });
+  //! Function to fetch playlist details
+  getFavouriteSongs(): void {
+    this.favouritesService.getFavouriteTracks().subscribe({
+      next: (favouriteTracks) => {
+        this.favourites = favouriteTracks;
+        this.tracks = favouriteTracks;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error fetching playlist details: ', error);
+        this.error = error;
+        this.isLoading = false;
+      },
+    });
   }
 
-   // Function to format tracks duration as MM:SS
+
+   //! Function to format tracks duration as MM:SS
    durationFormatter(durationMs: number): string {
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Function to handle track click
+  //! Function to handle track click
   onTrackClick(track: Track): void {
     this.currentTrackService?.selectTrack(track);
-  }
-
-  // Function to toggle favourites
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
-  }
-
-  // Function to check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
   }
 
   onSelectItem(id: string, playlistId: string): void {

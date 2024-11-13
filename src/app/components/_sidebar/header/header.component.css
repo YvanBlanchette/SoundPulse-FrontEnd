@@ -1,0 +1,7 @@
+mat-chip {
+  background-color: #686C72 !important;
+}
+
+.active {
+  @apply bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent font-black; 
+}

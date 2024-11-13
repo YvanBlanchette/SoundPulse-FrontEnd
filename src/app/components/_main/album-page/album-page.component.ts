@@ -1,25 +1,27 @@
-import { combineLatest, Subscription, Observable, retry, timer } from 'rxjs';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { MatMenuModule } from '@angular/material/menu';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MatTableModule } from '@angular/material/table';
+import { combineLatest, Subscription, Observable, retry, timer, of } from 'rxjs';
+import { AsyncPipe,NgFor, NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OnInit, OnDestroy, ChangeDetectorRef, Component, Input } from '@angular/core';
 
 // Interface imports
 import { Track } from '@/app/interfaces/track';
+import { LibraryItem } from '@/app/interfaces/library-item';
 import { AlbumResponse } from '@/app/interfaces/album-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 
 // Service imports
 import { ApiService } from '@/app/services/api.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
 import { RoutingService } from '@/app/services/routing.service';
+import { LibraryService } from '@/app/services/library.service';
+import { FavouritesService } from '@/app/services/favourites.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 // Component imports
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTableModule } from '@angular/material/table';
 import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
-import { LibraryItem } from '@/app/interfaces/library-item';
-import { LibraryService } from '@/app/services/library.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { FavouritesButtonComponent } from "@/app/components/_shared/favourites-button/favourites-button.component";
 
 
 // Define the AlbumPage component
@@ -32,8 +34,9 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatMenuModule,
     NgFor,
     NgIf,
-    NgClass
-  ],
+    AsyncPipe,
+    FavouritesButtonComponent
+],
   templateUrl: './album-page.component.html',
   styleUrls: ['./album-page.component.css'],
 })
@@ -61,8 +64,9 @@ export class AlbumPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     public routingService: RoutingService,
+    public favouritesService: FavouritesService,
     private apiService: ApiService,
-    private libraryService: LibraryService,
+    public libraryService: LibraryService,
     private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -157,22 +161,6 @@ getAlbumDetails(): void {
     this.currentTrackService?.selectTrack(track);
   }
 
-  // Toggle favourite
-  public toggleFavourite(track: Track) {
-    this.apiService.toggleFavourite(track).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error toggling favourite:', error);
-      },
-    );
-  }
-
-  // Check if a track is a favourite
-  isFavourite(track: Track): boolean {
-    return this.apiService.isFavourite(track);
-  }
-
   // Navigate to artist profile
   artistProfile(id: string): void {
     this.router.navigate([`/artists/${id}`]);
@@ -211,5 +199,18 @@ getAlbumDetails(): void {
         }
       });
     }
+  }
+
+   //! Function to remove library item
+   removeLibraryItem(id: string): void {
+    this.libraryService.removeLibraryItem(id).subscribe({
+      next: (libraryItems) => {
+        this.cdr.detectChanges();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing library item:', error);
+        alert(`Failed to remove library item: ${error.error.message}`);
+      }
+    });
   }
 }

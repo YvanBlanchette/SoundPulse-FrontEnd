@@ -1,15 +1,27 @@
 //* Module imports
-import { Component, EventEmitter, Output } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import {MatChipsModule} from '@angular/material/chips';
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [],
+  imports: [MatChipsModule, NgClass],
   templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
   // Outputs
   @Output() toggleSidenav = new EventEmitter<void>();
+  @Output() filterChange = new EventEmitter<string>();
+  currentFilter: string = 'all';
+
+  onFilterChange(filter: string) {
+    this.currentFilter = filter;
+    this.filterChange.emit(filter);
+  }
 
   // Methods
   onToggleSidenav() {

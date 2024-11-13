@@ -1,5 +1,5 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, of, retry, shareReplay, tap, throwError, timeout } from 'rxjs';
 
 //* Interface imports
@@ -7,14 +7,15 @@ import { NewAlbums } from '@/app/interfaces/new-albums';
 import { LibraryItem } from '@/app/interfaces/library-item';
 import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
-
-//* Environment imports
-import { env } from '@/env/environment';
-
 import { SearchResults } from '@/app/interfaces/search-results';
 import { Track } from '@/app/interfaces/track';
 import { PlaylistResponse } from '@/app/interfaces/playlist-response';
 import { User } from '@/app/interfaces/user';
+import { FavouriteTrack } from '@/app/interfaces/favourite-track';
+import { FavouriteTrackRequest } from '@/app/interfaces/favourite-track-request';
+
+//* Environment imports
+import { env } from '@/env/environment';
 
 //? Enum for item types
 enum ItemType {
@@ -58,6 +59,7 @@ export class ApiService {
     return throwError(() => error);
   }
 
+
   //! Generic function to fetch data from API
   private get<T>(endpoint: string): Observable<T> {
     return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
@@ -68,10 +70,12 @@ export class ApiService {
     );
   }
 
+
   //! Function to get library items
   getLibraryItems(): Observable<LibraryItem[]> {
     return this.get<LibraryItem[]>('library');
   }
+
 
   //! Function to format library items
   getFormattedLibraryItems(): Observable<LibraryItem[]> {
@@ -94,12 +98,14 @@ export class ApiService {
     );
   }
 
+
   //! Function to add a new item to the library
   addLibraryItem(item: LibraryItem): Observable<LibraryItem> {
     return this.http.post<LibraryItem>(`${this.apiUrl}/library`, item, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))
     );
   }
+
 
   //! Function to remove an item to the library
   removeLibraryItem(id: string): Observable<LibraryItem> {
@@ -108,10 +114,12 @@ export class ApiService {
     );
   }
 
+
   //! Function to get album details
   fetchAlbumDetails(albumId: string, artistId: string): Observable<ExtendedAlbumResponse> {
     return this.get<ExtendedAlbumResponse>(`albums/${albumId}?artistId=${artistId}`);
   }
+
 
   //! Function to get artist details
   fetchArtistDetails(artistId: string): Observable<ExtendedArtistResponse> {
@@ -130,19 +138,30 @@ export class ApiService {
     );
   }
 
-  //! Function to get playlist details
-  fetchPlaylistDetails(Id: string): Observable<PlaylistResponse> {
+   //! Function to get playlist details
+   fetchPlaylistDetails(Id: string): Observable<PlaylistResponse> {
     return this.get<PlaylistResponse>(`playlists/${Id}`);
   }
 
-  //! Function to get favourite songs
-  fetchFavourites(): Observable<PlaylistResponse> {
-    return this.http.get<PlaylistResponse>(`${this.apiUrl}/favourites`, this.httpOptions);
+
+  //! Function to get new albums
+  getNewAlbums(): Observable<NewAlbums> {
+    return this.get<NewAlbums>('albums/new-releases');
   }
 
+
+/**
+ *  FAVOURITE SONGS
+ */
+  //! Function to get favourite songs
+  getFavouriteSongs(): Observable<FavouriteTrack[]> {
+    return this.http.get<FavouriteTrack[]>(`${this.apiUrl}/favourites`, this.httpOptions);
+  }
+
+
   //! Function to format favourite songs
-  fetchFormattedFavourites(): Observable<PlaylistResponse[]> {
-    return this.fetchFavourites().pipe(
+  getFormattedFavouriteSongs(): Observable<FavouriteTrack[]> {
+    return this.getFavouriteSongs().pipe(
       map((response) => {
         if (!Array.isArray(response) || response.length === 0) {
           return []; 
@@ -160,57 +179,53 @@ export class ApiService {
     );
   }
 
+  //! Function to add favourite track
+  addFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
+    const songData = {
+      song_id: trackRequest.song_id,
+      name: trackRequest.name,
+      duration_ms: trackRequest.duration_ms,
+      artists: trackRequest.artists,
+      preview_url: trackRequest.preview_url
+    };
 
-  //! Function to get new albums
-  getNewAlbums(): Observable<NewAlbums> {
-    return this.get<NewAlbums>('albums/new-releases');
-  }
-
-  //! Function to check if a track is in the favorites
-  isFavourite(track: Track): boolean {
-    const favouriteTrackIds = JSON.parse(localStorage.getItem('favourite-track-ids') || '[]');
-    return favouriteTrackIds.includes(track.id);
-  }
-  
-  //! Function to toggle favourite track
-  toggleFavourite(track: Track): Observable<any> {
-    const apiUrl = env.API_URL;
-    const endpoint = 'favourites';
-    const trackId = track.id;
-  
-    // Use isFavourite method to check if track is already a favorite
-    const isFavourite = this.isFavourite(track);
-  
-    if (isFavourite) {
-      // Remove from favourites
-      return this.http.delete(`${apiUrl}/${endpoint}/${trackId}`, this.httpOptions).pipe(
-        catchError(this.handleError),
-        tap(() => {
-          track.isFavourite = false;
-        })
-      );
-    } else {
-      // Add to favourites
-      const favouriteData = {
-        song_id: trackId,
-        name: track.name,
-        duration_ms: track.duration_ms,
-        preview_url: track.preview_url,
-        artists: track.artists,
-        album: track.album,
-        rating: track.rating,
-      };
-  
-      return this.http.post(`${apiUrl}/${endpoint}`, favouriteData, this.httpOptions).pipe(
-        catchError(this.handleError),
-        tap(() => {
-          track.isFavourite = true;
-        })
-      );
-    }
+    return this.http.post(`${this.apiUrl}/favourites`, songData, this.httpOptions).pipe(
+      catchError(this.handleError),
+      tap(() => {
+        // Update local storage
+        const favouriteTrackIds = JSON.parse(localStorage.getItem('favourite-track-ids') || '[]');
+        favouriteTrackIds.push(trackRequest.song_id);
+        localStorage.setItem('favourite-track-ids', JSON.stringify(favouriteTrackIds))
+      })
+    );
   }
 
 
+  //! Function to remove favourite track
+  removeFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/favourites/${trackRequest.song_id}`, this.httpOptions).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) {
+          console.error('Favourite song not found');
+          // Handle 404 error
+        } else {
+          console.error('Error removing favourite track:', error);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+
+  //! Function to check if a song is in the favourites
+  isFavourite(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/favourites/is_favourite/${id}`);
+  }
+
+
+/**
+ * SEARCH RESULTS
+ */
   //! Function to get search results
   getSearchResults(query: string, type: string = 'track,artist,album,playlist'): Observable<SearchResults> {
     if (!query.trim()) {
@@ -225,12 +240,18 @@ export class ApiService {
     );
   }
 
+
+/**
+ * USER
+ */
+  //! Function to get the current user
   getUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/user`, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))
     );
   }
 
+  //! Function to update the current user
   updateUser(user: User): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/user`, user, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))

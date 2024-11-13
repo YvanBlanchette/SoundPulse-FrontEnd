@@ -1,27 +1,29 @@
 //* Module imports
+import { NgClass } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, Input} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 
 //* Interface imports
 import { LibraryItem } from '@/app/interfaces/library-item';
 import { LibraryService } from '@/app/services/library.service';
-import { HttpErrorResponse } from '@angular/common/http';
 
 
 @Component({
   selector: 'app-library-item',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, NgClass],
   templateUrl: './library-item.component.html',
+  styleUrls: ['./library-item.component.css']
 })
 export class LibraryItemComponent {
   @Input() item!: LibraryItem;
 
-  constructor(private router: Router, private libraryService: LibraryService, private cdr: ChangeDetectorRef) { }
+  constructor(private router: Router, private libraryService: LibraryService, private cdr: ChangeDetectorRef) {}
 
   onSelectItem(item: LibraryItem): void {
     switch (item.type) {
-      case 'Favorites':
+      case 'favorites':
         this.router.navigate([`/favourites`]);
         break;
       case 'Artist':
