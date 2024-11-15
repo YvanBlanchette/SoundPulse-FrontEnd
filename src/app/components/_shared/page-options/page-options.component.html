@@ -1,18 +1,34 @@
 <div class="absolute top-6 right-6">
-  <button [matMenuTriggerFor]="trackOptions" class="text-gray-100/50 hover:text-gray-100 transition-all duration-300 w-10 h-10 rounded-full flex items-center justify-center">
-    <i class="fa-solid fa-ellipsis-vertical text-2xl"></i>
+  <button [matMenuTriggerFor]="trackOptions" class="text-gray-100/50 hover:text-gray-100 transition-all duration-300 rounded-full flex items-center justify-center">
+    <mat-icon class="text-2xl">more_vert</mat-icon>
   </button>
+
   <mat-menu #trackOptions="matMenu" xPosition="before">
-    @if(libraryService.isItemInLibrary(itemDetails!.id) | async) {
-      <button (click)="removeLibraryItem(itemDetails!.id)" mat-menu-item class="flex items-center justify-center">
-        <i class="fa-regular fa-trash-can mr-1"></i>
-        Retirer de ma bibliothèque
-      </button>
+  @if(itemDetails.type !== 'track') { 
+      @if(libraryService.isItemInLibrary(itemDetails!.id) | async) {
+        <button (click)="removeLibraryItem(itemDetails!.id)" mat-menu-item class="flex items-center justify-center">
+          <i class="fa-regular fa-trash-can mr-1"></i>
+          Retirer de ma bibliothèque
+        </button>
+      } @else {
+        <button (click)="addLibraryItem()" mat-menu-item class="flex items-center justify-center">
+          <i class="fa-solid fa-plus mr-1"></i>
+          Ajouter à ma bibliothèque
+        </button>
+      }
     } @else {
-      <button (click)="addLibraryItem()" mat-menu-item class="flex items-center justify-center">
-        <i class="fa-solid fa-plus mr-1"></i>
-        Ajouter à ma bibliothèque
-      </button>
+      <!-- Track Favourite Options -->
+      @if(favouritesService.isFavourite(itemDetails) | async) {
+        <button (click)="favouritesService.removeFavourite(itemDetails)" mat-menu-item class="flex items-center justify-center">
+          <i class="fa-regular fa-trash-can mr-1"></i>
+          Retirer des favoris
+        </button>
+      } @else {
+        <button (click)="favouritesService.addFavourite(itemDetails)" mat-menu-item class="flex items-center justify-center">
+          <i class="fa-solid fa-plus mr-1"></i>
+          Ajouter aux favoris
+        </button>
+      }
     }
   </mat-menu>
 </div>

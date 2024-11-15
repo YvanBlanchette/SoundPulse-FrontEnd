@@ -1,52 +1,54 @@
-import { SearchResults } from '@/app/interfaces/search-results';
-import { ApiService } from '@/app/services/api.service';
 import { Component, OnInit } from '@angular/core';
+import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, EMPTY, Subscription, switchMap, tap } from 'rxjs';
-import { CurrentTrackService } from '@/app/services/current-track.service';
-import { Track } from '@/app/interfaces/track';
-import { MatTableModule } from '@angular/material/table';
-import { ProgressSpinnerComponent } from '../../_shared/progress-spinner/progress-spinner.component';
+
+//* Component imports
 import { MatMenuModule } from '@angular/material/menu';
-import { NgClass, NgFor, NgIf } from '@angular/common';
-import { CollectionComponent } from "../_search-results/collection/collection.component";
-import { TracksTableComponent } from "../_search-results/tracks-table/tracks-table.component";
+import { MatTableModule } from '@angular/material/table';
+import { CollectionComponent } from "@/app/components/_shared/collection/collection.component";
+import { TracksTableComponent } from "@/app/components/_shared/tracks-table/tracks-table.component";
+import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
+
+//* Interface imports
+import { SearchResults, Track, Artist, Album, Playlist } from '@/app/interfaces/search-results';
+
+//* Service imports
+import { ApiService } from '@/app/services/api.service';
+
 
 @Component({
   selector: 'app-search-results-page',
   standalone: true,
   imports: [
-    MatTableModule,
     ProgressSpinnerComponent,
-    MatMenuModule,
-    NgFor,
-    NgIf,
-    NgClass,
     CollectionComponent,
-    TracksTableComponent
-],
+    TracksTableComponent,
+  ],
   templateUrl: './search-results-page.component.html',
-  styleUrls: ['./search-results-page.component.css']
 })
 
 
 export class SearchResultsPage implements OnInit {
   query: string = '';
-  searchResults?: any; 
+  searchResults: SearchResults | null = null; 
+  artists: Artist[] = [];
+  albums: Album[] = [];
+  tracks: Track[] = [];
+  playlists: Playlist[] = [];
   searchResultsSubscription!: Subscription;
   searchBackground: string = 'https://images.unsplash.com/photo-1487537023671-8dce1a785863?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
   isLoading: boolean = true;
-  error: any = null;
-  tracks: any | null | undefined = null;
-  
+  error: string = '';
 
+  // Constructor with dependencie injections
   constructor(
     private apiService: ApiService,
     private route: ActivatedRoute,
-    private router: Router,
-    private currentTrackService: CurrentTrackService
   ) { }
 
+
+  // On component initialization
   ngOnInit(): void {
     this.route.queryParams.pipe(
       tap((params) => {
@@ -56,6 +58,7 @@ export class SearchResultsPage implements OnInit {
         this.apiService.getSearchResults(this.query).pipe(
           tap((response) => {
             this.searchResults = response;
+            this.filterResultsByType();
             this.isLoading = false;
           }),
           catchError((error) => {
@@ -69,17 +72,13 @@ export class SearchResultsPage implements OnInit {
     ).subscribe();
   }
 
-   
-  
-  onItemClick(item: any): void {
-    if(item.type === 'track') {
-      this.router.navigate(['/tracks', item.id]);
-    } else if(item.type === 'album') {
-      this.router.navigate(['/albums', item.id]);
-    } else if(item.type === 'playlist') {
-      this.router.navigate(['/playlists', item.id]);
-    } else if (item.type === 'artist') {
-      this.router.navigate(['/artists', item.id]);
-    }
+
+  // Filter search results by type
+  filterResultsByType(): void {
+    if (!this.searchResults) return;
+    this.tracks = this.searchResults.tracks;
+    this.artists = this.searchResults.artists;
+    this.albums = this.searchResults.albums;
+    this.playlists = this.searchResults.playlists;
   }
 }

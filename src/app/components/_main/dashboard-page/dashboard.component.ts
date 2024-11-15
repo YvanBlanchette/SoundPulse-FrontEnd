@@ -1,19 +1,33 @@
-import { User, UserResponse } from '@/app/interfaces/user';
-import { UserService } from '@/app/services/user.service';
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { map, Observable, Subscription } from 'rxjs';
-import { ProgressSpinnerComponent } from "@/app/components/_shared/progress-spinner/progress-spinner.component";
-import { AsyncPipe, DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { Router, RouterState } from '@angular/router';
-import { RoutingService } from '@/app/services/routing.service';
-import { ApiService } from '@/app/services/api.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
-import { Track } from '@/app/interfaces/track';
-import { MatTableModule } from '@angular/material/table';
+import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
-import { EditProfileFormComponent } from "../_dashboard/edit-profile-form/edit-profile-form.component";
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+
+//* Component imports
+import { CollectionComponent } from "@/app/components/_shared/collection/collection.component";
+import { TracksTableComponent } from "@/app/components/_shared/tracks-table/tracks-table.component";
+import { ProgressSpinnerComponent } from "@/app/components/_shared/progress-spinner/progress-spinner.component";
+import { EditProfileFormComponent } from "@/app/components/_main/_dashboard/edit-profile-form/edit-profile-form.component";
+
+//* Interface imports
+import { User } from '@/app/interfaces/user';
+import { Track } from '@/app/interfaces/track';
+import { LibraryItem } from '@/app/interfaces/library-item';
+
+//* Service imports
+import { UserService } from '@/app/services/user.service';
+import { LibraryService } from '@/app/services/library.service';
+import { RoutingService } from '@/app/services/routing.service';
 import { FavouritesService } from '@/app/services/favourites.service';
-import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
+
+
+enum LibraryItemType {
+  Artist = 'Artist',
+  Album = 'Album',
+  Playlist = 'Playlist',
+}
+
 
 @Component({
   selector: 'app-dashboard',
@@ -22,66 +36,83 @@ import { FavouritesButtonComponent } from "../../_shared/favourites-button/favou
     ProgressSpinnerComponent,
     AsyncPipe,
     DatePipe,
-    MatTableModule,
     MatMenuModule,
-    NgFor,
-    NgIf,
-    NgClass,
     EditProfileFormComponent,
-    FavouritesButtonComponent
-],
+    TracksTableComponent,
+    CollectionComponent
+  ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
 })
-export class DashboardPage implements OnInit {
-  user$!: Observable<User | null>;
-  isLoading: boolean = true;
-  isEditMode: boolean = false;
-  error: any = null;
-  tracks: any | null | undefined = null;
-  displayedColumns: string[] = [
-    'index',
-    'title',
-    'artist',
-    'duration',
-    'options',
-  ];
 
+
+export class DashboardPage implements OnInit {
+  // User observable
+  user$!: Observable<User | null>;
+  // Loading state
+  isLoading: boolean = true;
+  // Edit mode
+  isEditMode: boolean = false;
+  // Error messages
+  error: any = null;
+
+  // Variables
+  tracks: Track[] = [];
+  libraryItems: LibraryItem[] = [];
+  artists: LibraryItem[] = [];
+  albums: LibraryItem[] = [];
+  playlists: LibraryItem[] = [];
+
+
+  // Constructor with dependency injections
   constructor(
     private userService: UserService,
     private router: Router,
     public routingService: RoutingService,
     public favouritesService: FavouritesService,
-    private currentTrackService: CurrentTrackService,
+    public libraryService: LibraryService,
     private cdr: ChangeDetectorRef
-  ) {
-  }
+  ) { }
 
-  private _favourites: any | null | undefined = null;
 
-  
-  @Input()
-  set favourites(value: any | null | undefined) {
-    this._favourites = value;
-    this.cdr.detectChanges();
-  }
-  
-
-  get favourites(): any | null | undefined {
-    return this._favourites;
-  }
-
+  // On Initialize component
   ngOnInit(): void {
     this.user$ = this.userService.getUser();
     this.getFavouriteSongs();
-  }
-  
-
-  isSelected(track: Track): boolean {
-    return this.currentTrackService?.isSelected(track);
+    this.getLibraryItems();
   }
 
-  //! Function to fetch playlist details
+
+  // Get library items
+  getLibraryItems(): void {
+    this.libraryService.getLibraryItems().pipe(
+      tap((libraryItems) => {
+        this.libraryItems = libraryItems;
+        this.filterLibraryItems();
+      })
+    ).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error fetching library items: ', error);
+        this.error = error;
+        this.isLoading = false;
+      },
+    });
+  }
+
+
+  // Filter library items by type
+  filterLibraryItems() {
+    this.artists = this.libraryItems.filter((item) => item.type === LibraryItemType.Artist);
+    this.albums = this.libraryItems.filter((item) => item.type === LibraryItemType.Album);
+    this.playlists = this.libraryItems.filter((item) => item.type === LibraryItemType.Playlist);
+    console.log(this.artists, this.albums, this.playlists);
+  }
+
+
+  // Fetch playlist details
   getFavouriteSongs(): void {
     this.favouritesService.getFavouriteTracks().subscribe({
       next: (favouriteTracks) => {
@@ -97,30 +128,15 @@ export class DashboardPage implements OnInit {
     });
   }
 
-   //! Function to format tracks duration as MM:SS
-   durationFormatter(durationMs: number): string {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
 
-  //! Function to handle track click
-  onTrackClick(track: Track): void {
-    this.currentTrackService?.selectTrack(track);
-  }
-
-  //! Function to navigate to album page
+  // Function to navigate to album page
   onSelectItem(id: string, playlistId: string): void {
     this.router.navigate([`/albums/${id}`], { queryParams: { playlistId } });
-}
-
-  //! Function to navigate to artist page
-  artistProfile(id: string): void {
-      this.router.navigate([`/artists/${id}`]);
   }
 
-  //! Function to toggle edit mode
+
+  // Function to toggle edit mode
   toggleEditMode(): void {
-  this.isEditMode = !this.isEditMode;
+    this.isEditMode = !this.isEditMode;
   }
 }

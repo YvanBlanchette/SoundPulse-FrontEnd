@@ -1,12 +1,20 @@
 <!-- Loading State -->
-@if(isLoading === true) {
+@if(isLoading === true)
+{
+
+  <!-- Loading Spinner -->
   <app-progress-spinner />
-} @else {
+
+}
+@else
+{
+
 <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ albumDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
-    
+    <img src="{{ albumDetails?.images?.[0]?.url }}" alt=""
+      class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
+
     <!-- Page Options Menu (top-right)  -->
     <app-page-options [itemDetails]="albumDetails" />
 
@@ -14,20 +22,26 @@
     <app-page-header [itemDetails]="albumDetails" />
 
     <!--  Page Body -->
-    <div class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
+    <div
+      class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
       <div class="p-6">
-          <!-- Tracks Table -->
-          <div class="w-full">
-              <app-tracks-table [tracks]="tracks" />
-          </div>
+        <!-- Tracks Table -->
+        <div class="w-full">
+          <app-tracks-table [tracks]="tracks" />
+        </div>
 
+        <!-- Albums Collection -->
+        @if(otherAlbums && otherAlbums.length > 0)
+        {
+
+          <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Autres albums de {{ albumDetails?.artists?.[0]?.name }}</h2>
           <!-- Albums Collection -->
-          @if(otherAlbums && otherAlbums.length > 0) { 
-            <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Autres albums de {{ albumDetails?.artists?.[0]?.name }}</h2>
-            <app-collection [collection]="otherAlbums" />
-          }
+          <app-collection [collection]="otherAlbums" />
+
+        }
       </div>
     </div>
   </div>
 </div>
+
 }

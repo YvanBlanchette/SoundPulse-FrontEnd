@@ -1,6 +1,6 @@
 //* Module imports
-import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 //* Component imports
@@ -17,8 +17,7 @@ import { CurrentTrackService } from '@/app/services/current-track.service';
 })
   
 export class VolumeControlsComponent implements OnDestroy {
-
-  // Properties
+  // Public variables
   value: number = 0.5;
   isMuted: boolean = false;
   disabled: boolean = false;
@@ -35,9 +34,14 @@ export class VolumeControlsComponent implements OnDestroy {
   // Subscriptions
   private subscription: Subscription;
 
-  constructor(private trackService: CurrentTrackService) {
+  // Constructor with dependency injections
+  constructor(
+    private trackService: CurrentTrackService
+  )
+  {
     // Subscribe to volume changes
     this.subscription = this.trackService.volume$.subscribe((volume) => {
+      // Update the volume
       this.value = volume;
     });
   }
@@ -45,13 +49,14 @@ export class VolumeControlsComponent implements OnDestroy {
   // Set the volume control
   volumeControl = new FormControl(this.value);
 
+  // On component destroy
   ngOnDestroy() {
-    // Unsubscribe
+    // Unsubscribe from subscriptions
     this.subscription.unsubscribe();
   }
 
-  // Methods
   private volumeTimeout: any = null;
+
 
   // Toggle mute
   toggleMute() {
@@ -73,6 +78,8 @@ export class VolumeControlsComponent implements OnDestroy {
     }
   }
   
+
+  // Set volume
   // Update volume when changed
   setVolume(event: any) {
     // Update volume on slider change

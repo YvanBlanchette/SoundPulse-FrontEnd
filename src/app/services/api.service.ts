@@ -27,14 +27,14 @@ export class ApiService {
     }),
   };
 
-  //? Observable for current track
+  // Observable for current track
   private currentTrackSubject = new BehaviorSubject<any | null>(null);
 
   currentTrack$: Observable<any | null> = this.currentTrackSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
-  //! Function to handle errors
+  // Function to handle errors
   private handleError(error: any) {
     console.error('API Call Error: ', error);
     
@@ -50,7 +50,7 @@ export class ApiService {
   }
 
 
-  //! Generic function to fetch data from API
+  // Generic function to fetch data from API
   private get<T>(endpoint: string): Observable<T> {
     return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
       retry(2),
@@ -61,13 +61,13 @@ export class ApiService {
   }
 
 
-  //! Function to get library items
+  // Function to get library items
   getLibraryItems(): Observable<LibraryItem[]> {
     return this.get<LibraryItem[]>('library');
   }
 
 
-  //! Function to format library items
+  // Function to format library items
   getFormattedLibraryItems(): Observable<LibraryItem[]> {
     return this.getLibraryItems().pipe(
       map((libraryItems) => {
@@ -77,7 +77,7 @@ export class ApiService {
         return libraryItems
           .map((item: LibraryItem) => ({
             ...item,
-            image: typeof item.image === 'string' ? JSON.parse(item.image) : item.image,
+            images: typeof item.images === 'string' ? JSON.parse(item.images) : item.images,
           }))
           .sort((a, b) => a.type.localeCompare(b.type));
       }),
@@ -89,7 +89,7 @@ export class ApiService {
   }
 
 
-  //! Function to add a new item to the library
+  // Function to add a new item to the library
   addLibraryItem(item: LibraryItem): Observable<LibraryItem> {
     return this.http.post<LibraryItem>(`${this.apiUrl}/library`, item, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))
@@ -97,7 +97,7 @@ export class ApiService {
   }
 
 
-  //! Function to remove an item to the library
+  // Function to remove an item to the library
   removeLibraryItem(id: string): Observable<LibraryItem> {
     return this.http.delete<LibraryItem>(`${this.apiUrl}/library/${id}`, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))
@@ -105,13 +105,13 @@ export class ApiService {
   }
 
 
-  //! Function to get album details
+  // Function to get album details
   fetchAlbumDetails(albumId: string, artistId: string): Observable<ExtendedAlbumResponse> {
     return this.get<ExtendedAlbumResponse>(`albums/${albumId}?artistId=${artistId}`);
   }
 
 
-  //! Function to get artist details
+  // Function to get artist details
   fetchArtistDetails(artistId: string): Observable<ExtendedArtistResponse> {
     return this.get<ExtendedArtistResponse>(`artists/${artistId}`);
   }
@@ -128,13 +128,13 @@ export class ApiService {
     );
   }
 
-   //! Function to get playlist details
+   // Function to get playlist details
    fetchPlaylistDetails(Id: string): Observable<PlaylistResponse> {
     return this.get<PlaylistResponse>(`playlists/${Id}`);
   }
 
 
-  //! Function to get new albums
+  // Function to get new albums
   getNewAlbums(): Observable<NewAlbums> {
     return this.get<NewAlbums>('albums/new-releases');
   }
@@ -143,13 +143,13 @@ export class ApiService {
 /**
  *  FAVOURITE SONGS
  */
-  //! Function to get favourite songs
+  // Function to get favourite songs
   getFavouriteSongs(): Observable<FavouriteTrack[]> {
     return this.http.get<FavouriteTrack[]>(`${this.apiUrl}/favourites`, this.httpOptions);
   }
 
 
-  //! Function to format favourite songs
+  // Function to format favourite songs
   getFormattedFavouriteSongs(): Observable<FavouriteTrack[]> {
     return this.getFavouriteSongs().pipe(
       map((response) => {
@@ -169,7 +169,7 @@ export class ApiService {
     );
   }
 
-  //! Function to add favourite track
+  // Function to add favourite track
   addFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
     const songData = {
       song_id: trackRequest.song_id,
@@ -191,7 +191,7 @@ export class ApiService {
   }
 
 
-  //! Function to remove favourite track
+  // Function to remove favourite track
   removeFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
     return this.http.delete(`${this.apiUrl}/favourites/${trackRequest.song_id}`, this.httpOptions).pipe(
       catchError((error: HttpErrorResponse) => {
@@ -207,7 +207,7 @@ export class ApiService {
   }
 
 
-  //! Function to check if a song is in the favourites
+  // Function to check if a song is in the favourites
   isFavourite(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/favourites/is_favourite/${id}`);
   }
@@ -216,7 +216,7 @@ export class ApiService {
 /**
  * SEARCH RESULTS
  */
-  //! Function to get search results
+  // Function to get search results
   getSearchResults(query: string, type: string = 'track,artist,album,playlist'): Observable<SearchResults> {
     if (!query.trim()) {
       throw new Error('Search query cannot be empty');
@@ -234,14 +234,14 @@ export class ApiService {
 /**
  * USER
  */
-  //! Function to get the current user
+  // Function to get the current user
   getUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/user`, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))
     );
   }
 
-  //! Function to update the current user
+  // Function to update the current user
   updateUser(user: User): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/user`, user, this.httpOptions).pipe(
       catchError((error) => this.handleError(error))

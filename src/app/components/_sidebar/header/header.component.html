@@ -2,15 +2,17 @@
 <div class="bg-[#121213] w-full flex flex-col justify-between items-center p-4 border-b-2 border-[#1F1F1F] shadow-2xl shadow-[#1F1F1F]">
   <div class=" w-full flex justify-between items-center">
     <div class="flex items-center gap-2">
-      <i class="fa-solid fa-lines-leaning text-xl"></i>
-      <span class="font-semibold text-lg">Votre Bibliothèque</span>
+      <i class="fa-solid fa-lines-leaning text-3xl ml-2"></i>
+      <span class="font-semibold text-2xl">Votre Bibliothèque</span>
     </div>
 
-    <!-- Add to library button -->
-    <button class="hover:bg-[#1F1F1F] rounded-full w-8 h-8 text-gray-300 hover:text-gray-100 transition">
-      <i class="fa-solid fa-plus text-xl font-light"></i>
+    <!-- Go to Dashboard Button -->
+    <button (click)="routingService.navigateByUrl('dashboard')" matTooltip="Aller au profil" class="focus:outline-none w-8 h-8 text-gray-300/50 hover:text-gray-100 rounded-full transition flex justify-center items-center">
+      <mat-icon>star</mat-icon>
     </button>
   </div>
+
+  <!-- Filter Buttons -->
   <div class="mt-2">
     <mat-chip-set class="flex" aria-label="Filter Selection">
       <mat-chip matTooltip="Filtrer par Tous">

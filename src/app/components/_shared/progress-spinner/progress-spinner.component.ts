@@ -7,8 +7,5 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
   standalone: true,
   imports: [MatProgressSpinnerModule],
   templateUrl: './progress-spinner.component.html',
-  styleUrl: './progress-spinner.component.css'
 })
-export class ProgressSpinnerComponent {
-
-}
+export class ProgressSpinnerComponent {}

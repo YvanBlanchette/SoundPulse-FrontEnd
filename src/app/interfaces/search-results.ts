@@ -1,43 +1,11 @@
 export interface SearchResults {
-  tracks: {
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-    items: Track[];
-  };
-  artists: {
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-    items: Artist[];
-  };
-  albums: {
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-    items: Album[];
-  };
-  playlists: {
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-    items: Playlist[];
-  };
+  tracks: Track[];
+  artists: Artist[];
+  albums: Album[];
+  playlists: Playlist[];
 }
 
-interface Track {
+export interface Track {
   album: Album;
   artists: Artist[];
   disc_number: number;
@@ -61,7 +29,7 @@ interface Track {
   is_local: boolean;
 }
 
-interface Artist {
+export interface Artist {
   external_urls: {
     spotify: string;
   };
@@ -79,7 +47,7 @@ interface Artist {
   uri: string;
 }
 
-interface Album {
+export interface Album {
   album_type: string;
   total_tracks: number;
   external_urls: {
@@ -97,7 +65,7 @@ interface Album {
   is_playable: boolean;
 }
 
-interface Playlist {
+export interface Playlist {
   collaborative: boolean;
   description: string;
   external_urls: {
@@ -128,7 +96,7 @@ interface Playlist {
   primary_color: string | null;
 }
 
-interface Image {
+export interface Image {
   url: string;
   height: number | null;
   width: number | null;

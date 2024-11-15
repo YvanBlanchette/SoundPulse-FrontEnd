@@ -1,5 +1,7 @@
 // sidebar.component.ts
 import { Component, Input } from '@angular/core';
+
+//* Component imports
 import { HeaderComponent } from "@/app/components/_sidebar/header/header.component";
 import { LibraryComponent } from "@/app/components/_sidebar/library/library.component";
 
@@ -9,11 +11,15 @@ import { LibraryComponent } from "@/app/components/_sidebar/library/library.comp
   imports: [HeaderComponent, LibraryComponent,
   ],
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.css'],
 })
+
+
 export class SidebarComponent {
+  // Variables
   @Input() filter: string = 'all';
-  
+
+
+  // Function to handle filter changes
   onFilterChange(filter: string) {
     this.filter = filter;
   }

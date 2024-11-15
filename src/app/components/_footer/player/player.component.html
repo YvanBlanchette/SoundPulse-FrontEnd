@@ -32,12 +32,12 @@
   <!-- Progress bar -->
   <div class="progress-bar-container flex items-center gap-4">
     <!-- Current time -->
-    {{ formatTime(currentTime) }}
+    {{ currentTime | formatDuration }}
 
     <!-- Progress bar -->
     <mat-progress-bar (mousedown)="seek($event)" [value]="progress" [bufferValue]="100"></mat-progress-bar>
 
-    <!-- Duration (of the preview audio) -->
-    {{ formatTime(audioDuration) }}
+    <!-- Duration (of the preview_url audio) -->
+    {{ audioDuration | formatDuration }}
   </div>
 </div>

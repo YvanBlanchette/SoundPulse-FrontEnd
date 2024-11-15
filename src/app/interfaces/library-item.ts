@@ -8,7 +8,7 @@ export interface LibraryItem {
   owner_id?: string;
   created_at: string;
   updated_at: string;
-  image: { url: string; width: number; height: number; }[];
+  images: { url: string; width: number; height: number; }[];
   type: string;
   image_url?: SafeUrl | null;
 }

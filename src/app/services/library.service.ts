@@ -17,7 +17,7 @@ export class LibraryService {
     this.initLibrary();
   }
 
-  //! Function to initialize library
+  // Function to initialize library
   private initLibrary(): void {
     this.apiService.getFormattedLibraryItems().subscribe({
       next: (response: LibraryItem[]) => {
@@ -30,7 +30,7 @@ export class LibraryService {
   }
 
   
-//! Function to get library observable
+// Function to get library observable
 getLibraryItems(): Observable<LibraryItem[]> {
   return this.library$.pipe(
     tap((library) => {
@@ -47,7 +47,7 @@ getLibraryItems(): Observable<LibraryItem[]> {
 }
 
   
-//! Function to add item to library
+// Function to add item to library
 addLibraryItem(item: LibraryItem): Observable<LibraryItem[]> {
   return this.apiService.addLibraryItem(item).pipe(
     switchMap(() => this.apiService.getLibraryItems()),
@@ -62,7 +62,7 @@ addLibraryItem(item: LibraryItem): Observable<LibraryItem[]> {
 }
 
 
-//! Function to remove item from library
+// Function to remove item from library
 removeLibraryItem(id: string): Observable<LibraryItem[]> {
   return this.apiService.removeLibraryItem(id).pipe(
     switchMap((response) => {
@@ -79,7 +79,7 @@ removeLibraryItem(id: string): Observable<LibraryItem[]> {
   }
   
 
-  //! Function to check if item is in library
+  // Function to check if item is in library
   isItemInLibrary(id: string): Observable<boolean> {
     return this.library$.pipe(
       map((libraryItems) => libraryItems?.some((item) => item.id === id) ?? false)

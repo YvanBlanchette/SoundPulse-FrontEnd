@@ -17,11 +17,11 @@
     <!-- Library track name & artist-->
     <div class="flex flex-col tracks-start justify-center">
       <p class="font-medium">{{track.name}}</p>
-      <p class="text-sm text-gray-400">{{track.artists[0].name}}</p>
+      <p (click)="routingService.navigateToArtist(track.artists[0].id)" class="text-sm text-gray-400 hover:underline cursor-pointer w-fit">{{track.artists[0].name}}</p>
     </div>
   </div>
 } @else { 
   <div>
-    Auncune chanson sélectionnée
+    <!-- Display nothing if no track is selected -->
   </div>
 }

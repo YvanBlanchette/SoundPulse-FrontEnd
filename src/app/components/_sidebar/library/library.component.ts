@@ -1,13 +1,12 @@
-//* Module imports
 import { Subject, takeUntil } from 'rxjs';
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChanges, OnChanges } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
-//* Interface imports
-import { LibraryItem } from '@/app/interfaces/library-item';
-
 //* Component imports
 import { LibraryItemComponent } from '@/app/components/_sidebar/library-item/library-item.component';
+
+//* Interface imports
+import { LibraryItem } from '@/app/interfaces/library-item';
 
 //* Service imports
 import { LibraryService } from '@/app/services/library.service';
@@ -18,10 +17,12 @@ import { LibraryService } from '@/app/services/library.service';
   standalone: true,
   imports: [LibraryItemComponent, MatIconModule],
   templateUrl: './library.component.html',
-  styleUrls: ['./library.component.css'],
   changeDetection: ChangeDetectionStrategy.Default
 })
+
+
 export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
+  // Variables
   @Input() filter: string = 'all';
   libraryItems: LibraryItem[] | null = null;
   selectedItem: LibraryItem | null = null;
@@ -30,14 +31,19 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
   errorMessage = '';
   filteredLibraryItems: LibraryItem[] | null = null;
 
-  constructor(private libraryService: LibraryService, private cdr: ChangeDetectorRef) { 
-  }
 
+  // Constructor with dependency injection
+  constructor(
+    private libraryService: LibraryService,
+    private cdr: ChangeDetectorRef) {}
+
+  // Subjects
   private ngUnsubscribe = new Subject();
 
+
+  // On Initialize component
   ngOnInit(): void {
     this.cdr.detectChanges();
-
     this.libraryService.library$.pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
@@ -53,16 +59,22 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
+
+  // On Destroy component
   ngOnDestroy(): void {
     this.ngUnsubscribe.complete();
   }
 
+
+  // On changes
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filter']) {
       this.filterLibraryItems();
     }
   }
 
+
+  // Filter library items by type
   filterLibraryItems(): void {
     if (this.libraryItems) {
       switch (this.filter) {

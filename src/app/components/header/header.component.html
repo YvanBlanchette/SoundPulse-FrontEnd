@@ -5,22 +5,15 @@
   <!-- Search bar -->
   <div class="lg:col-span-6 hidden lg:flex items-center justify-center gap-4">
     <!-- Home button -->
-    <button (click)="navigateToHome()" class="flex items-center justify-center bg-[#1F1F1F] bg-soundpulse transition-all duration-300 w-10 h-10 rounded-full" title="Accueil">
+    <button (click)="routingService.navigateByUrl('')" class="flex items-center justify-center bg-[#1F1F1F] bg-soundpulse transition-all duration-300 w-10 h-10 rounded-full" title="Accueil">
       <mat-icon class="text-black" fontIcon='home'></mat-icon>
     </button>
-
     <!-- Search bar -->
     <app-search />
   </div>
 
-  <!-- User button / notifications -->
+  <!-- User button -->
   <div class="col-span-3 flex items-center gap-4 ml-auto">
-    <!-- Notifications -->
-    <button>
-      <i class="fa-regular fa-bell text-xl text-gray-400 hover:text-gray-200"></i>
-    </button>
-
-    <!-- User button -->
     <app-user-button />
   </div>
 </header>

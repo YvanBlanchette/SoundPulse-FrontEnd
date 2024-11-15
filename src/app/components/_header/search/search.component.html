@@ -1,8 +1,8 @@
 <form #searchForm (submit)="onSubmit(searchInput.value)" class="relative w-[450px] h-10">
   <!-- Search input -->
-  <input type="text" #searchInput name="query" class="h-full w-full p-4 ps-14 rounded-full bg-[#1F1F1F]"
+  <input matInput type="text" #searchInput name="query" class="h-full w-full p-4 ps-14 rounded-full bg-[#1F1F1F] placeholder:text-neutral-400"
     placeholder="Que voulez-vous faire jouer ?">
 
   <!-- Search icon -->
-  <i class="fa-solid fa-magnifying-glass absolute top-1/2 -translate-y-1/2 left-4 text-xl text-gray-400"></i>
+  <i class="fa-solid fa-magnifying-glass absolute top-1/2 -translate-y-1/2 left-4 text-xl text-neutral-400 pr-2 border-r border-gray-300/50"></i>
 </form>

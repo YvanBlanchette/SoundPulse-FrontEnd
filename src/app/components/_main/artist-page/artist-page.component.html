@@ -1,12 +1,20 @@
 <!-- Loading State -->
-@if(isLoading === true) {
+@if(isLoading === true) 
+{
+
+  <!-- Loading Spinner -->
   <app-progress-spinner />
-} @else {
+
+} 
+@else 
+{
+
 <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
-    <img src="{{ artistDetails?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
-    
+    <img [src]="artistDetails?.images?.[0]?.url" [alt]="artistDetails?.name"
+      class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
+
     <!-- Page Options Menu (top-right)  -->
     <app-page-options [itemDetails]="artistDetails" />
 
@@ -14,21 +22,23 @@
     <app-page-header [itemDetails]="artistDetails" />
 
     <!--  Page Body -->
-    <div class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
+    <div
+      class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
       <div class="p-6">
-          <!-- Tracks Table -->
-          <div class="w-full">
-            <h2 class="text-2xl font-semibold tracking-wider mb-2">Top 10 des Chansons</h2>
-              <app-tracks-table [tracks]="tracks" />
-          </div>
+        <!-- Tracks Table -->
+        <div class="w-full">
+          <h2 class="text-2xl font-semibold tracking-wider mb-2">Top 10 des Chansons</h2>
+          <app-tracks-table [tracks]="tracks" />
+        </div>
 
-          <!-- Albums Collection -->
-          @if(albums && albums.length > 0) { 
-            <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Albums de {{ artistDetails?.name }}</h2>
-            <app-collection [collection]="albums" />
-          }
+        <!-- Albums Collection -->
+        @if(albums && albums.length > 0) {
+        <h2 class="mt-12 mb-4 text-2xl font-semibold tracking-wider">Albums de {{ artistDetails?.name }}</h2>
+        <app-collection [collection]="albums" />
+        }
       </div>
     </div>
   </div>
 </div>
+
 }

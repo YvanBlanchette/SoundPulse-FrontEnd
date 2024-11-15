@@ -11,7 +11,6 @@ import { SearchResultsPage } from '@/app/components/_main/search-results-page/se
 import { AlbumPage } from '@/app/components/_main/album-page/album-page.component';
 import { ArtistPage } from '@/app/components/_main/artist-page/artist-page.component';
 import { PlaylistPage } from '@/app/components/_main/playlist-page/playlist-page.component';
-import { FavouritesPage } from '@/app/components/_main/favourites-page/favourites-page.component';
 import { TrackPage } from '@/app/components/_main/track-page/track-page.component';
 import { DashboardPage } from '@/app/components/_main/dashboard-page/dashboard.component';
 
@@ -49,10 +48,6 @@ export const routes: Routes = [
         path: 'playlists/:id',
         component: PlaylistPage,
         runGuardsAndResolvers: 'paramsChange'
-      },
-      {
-        path: 'favourites',
-        component: FavouritesPage
       },
       {
         path: 'search',

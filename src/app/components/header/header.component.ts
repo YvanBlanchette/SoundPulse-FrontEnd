@@ -1,25 +1,30 @@
-//* Module imports
 import { Component } from '@angular/core';
 
 //* Component imports
+import { MatIconModule } from '@angular/material/icon';
 import { LogoComponent } from "@/app/components/_shared/logo/logo.component";
 import { SearchComponent } from "@/app/components/_header/search/search.component";
 import { UserButtonComponent } from "@/app/components/_header/user-button/user-button.component";
-import { MatIcon } from '@angular/material/icon';
-import { Router, RouterLink } from '@angular/router';
+
+//* Service imports
+import { RoutingService } from '@/app/services/routing.service';
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [LogoComponent, SearchComponent, UserButtonComponent, MatIcon, RouterLink],
+  imports: [
+    LogoComponent,
+    SearchComponent,
+    UserButtonComponent,
+    MatIconModule
+  ],
   templateUrl: './header.component.html',
 })
   
 export class HeaderComponent {
 
-  constructor(private router: Router) {}
+  // Constructor with dependencie injections
+  constructor(public routingService: RoutingService) {}
 
-  navigateToHome(): void {
-    this.router.navigateByUrl('/');
-  }
 }

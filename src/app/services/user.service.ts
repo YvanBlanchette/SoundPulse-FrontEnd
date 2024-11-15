@@ -20,7 +20,7 @@ export class UserService {
     this.initUser();
   }
 
-  //! Function to initialize user
+  // Function to initialize user
   private initUser(): void {
     if (localStorage.getItem('token')) {
       this.apiService.getUser().subscribe((response: User) => {
@@ -32,7 +32,7 @@ export class UserService {
     }
   }
 
-//! Function to get user observable
+// Function to get user observable
 getUser(): Observable<User | null> {
   return this.user$.pipe(
     tap((user) => {
@@ -49,7 +49,7 @@ getUser(): Observable<User | null> {
   }
   
 
-//! Function to get the current user id
+// Function to get the current user id
   getCurrentUserId(): number | undefined {
     const user = this.userSubject.getValue();
     if (user) {
@@ -60,7 +60,7 @@ getUser(): Observable<User | null> {
 }
 
 
-//! Function to update user
+// Function to update user
 updateUser(user: User, originalUser: User): Observable<any> {
   const updatedUser: User = { ...originalUser };
 
@@ -80,7 +80,7 @@ updateUser(user: User, originalUser: User): Observable<any> {
   );
 }
 
-  //! Function to logout user
+  // Function to logout user
   logout(): void {
     localStorage.removeItem('token');
     this.userSubject.next(null);

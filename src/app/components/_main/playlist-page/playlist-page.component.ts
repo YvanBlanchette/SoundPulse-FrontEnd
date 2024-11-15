@@ -1,8 +1,6 @@
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
-import { ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { retry, Subscription, timer } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { retry, Subject, Subscription, takeUntil, timer } from 'rxjs';
 
 
 //* Interface imports
@@ -12,81 +10,79 @@ import { PlaylistResponse } from '@/app/interfaces/playlist-response';
 
 //* Service imports
 import { ApiService } from '@/app/services/api.service';
-import { CurrentTrackService } from '@/app/services/current-track.service';
 import { RoutingService } from '@/app/services/routing.service';
+import { LibraryService } from '@/app/services/library.service';
+import { CurrentTrackService } from '@/app/services/current-track.service';
 
 
 //* Component imports
-import { MatMenuModule } from '@angular/material/menu';
+import { PageHeaderComponent } from "@/app/components/_shared/page-header/page-header.component";
+import { PageOptionsComponent } from "@/app/components/_shared/page-options/page-options.component";
+import { TracksTableComponent } from "@/app/components/_shared/tracks-table/tracks-table.component";
 import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spinner/progress-spinner.component';
-import { LibraryItem } from '@/app/interfaces/library-item';
-import { LibraryService } from '@/app/services/library.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { FavouritesButtonComponent } from "../../_shared/favourites-button/favourites-button.component";
 
 
 @Component({
   selector: 'app-playlist-page',
   standalone: true,
   imports: [
-    MatTableModule,
     ProgressSpinnerComponent,
-    MatMenuModule,
-    NgFor,
-    NgIf,
-    AsyncPipe,
-    FavouritesButtonComponent
-],
+    PageOptionsComponent,
+    PageHeaderComponent,
+    TracksTableComponent
+  ],
   templateUrl: './playlist-page.component.html',
   styleUrl: './playlist-page.component.css'
 })
 
 
 export class PlaylistPage implements OnInit, OnDestroy {
- // Properties
+  // Playlist data
   playlistId: string = '';
+  // Loading state
   isLoading: boolean = true;
-  error: any = null;
-  tracks: any | null | undefined = null;
-  displayedColumns: string[] = [
-    'index',
-    'thumbnail',
-    'title',
-    'artist',
-    'duration',
-    'options',
-  ];
+  // Error state
+  error: string | null = null;
+  // Tracks data
+  tracks: Track[] = [];
 
+
+  // Private variables
+  private destroy$ = new Subject<void>();
   private routeParamsSubscription: Subscription = new Subscription;
   private _playlistDetails: PlaylistResponse | null | undefined = null;
 
+
+  // Constructor with dependencie injections
   constructor(
-    private router: Router,
     private route: ActivatedRoute,
     public routingService: RoutingService,
     private apiService: ApiService,
     public libraryService: LibraryService,
     private currentTrackService: CurrentTrackService,
     private cdr: ChangeDetectorRef
-  ) {}
-  
-  @Input()
+  ) { }
+
+
+  // Setter for the playlist details
   set playlistDetails(value: PlaylistResponse | null | undefined) {
+    console.log('playlistDetails: ', value)
     this._playlistDetails = value;
     if (value !== null) {
-      this.tracks = value?.tracks?.items?.map((item) => item.track) ?? [];
-    } else {
-      this.tracks = [];
+      this.tracks = (value?.tracks?.items?.map((item) => item.track)) as Track[];
     }
   }
-  
 
+
+  // Getter for the playlist details
   get playlistDetails(): PlaylistResponse | null | undefined {
     return this._playlistDetails;
   }
 
 
+  // On Initialize component
   ngOnInit(): void {
+    // Subscribe to route params and fetch playlist details
     this.routeParamsSubscription = this.route.params.subscribe(params => {
       this.playlistId = params['id'];
       if (this.playlistId) {
@@ -97,117 +93,62 @@ export class PlaylistPage implements OnInit, OnDestroy {
     });
   }
 
+
+  // On Destroy component
   ngOnDestroy(): void {
+    // Unsubscribe and reset states
     this.routeParamsSubscription.unsubscribe();
     this.resetState();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  
+  // Reset component states
   resetState(): void {
     this.playlistDetails = null;
-    this.tracks = null;
+    this.tracks = [];
     this.isLoading = true;
     this.error = null;
   }
 
-  isSelected(track: Track): boolean {
-    return this.currentTrackService?.isSelected(track);
-  }
 
-  //! Function to fetch playlist details
-  // Fetch playlist details from API
-getPlaylistDetails(): void {
-  this.isLoading = true;
-  const maxRetries = 5;
-  const initialRetryDelay = 500;
+  // Fetch playlist details
+  getPlaylistDetails(): void {
+    // Set loading state to true
+    this.isLoading = true;
 
-  this.apiService
-    .fetchPlaylistDetails(this.playlistId)
-    .pipe(
-      retry({
-        count: maxRetries,
-        delay: (error, retryCount) => timer(initialRetryDelay * (retryCount + 1))
-      })
-    )
-    .subscribe({
-      next: (response) => {
-        // Update playlist details and loading state
-        this.playlistDetails = response;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        // Handle error and update loading state
-        console.error('Error fetching playlist details: ', error);
-        this.error = error;
-        this.isLoading = false;
-      },
-    });
-}
+    // Maximum permitted retries
+    const maxRetries = 5;
 
-   //! Function to format tracks duration as MM:SS
-   durationFormatter(durationMs: number): string {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
+    // Initial retry delay
+    const initialRetryDelay = 500;
 
-  //! Function to handle track click
-  onTrackClick(track: Track): void {
-    this.currentTrackService?.selectTrack(track);
-  }
-
-
-  onSelectItem(id: string, playlistId: string): void {
-    this.router.navigate([`/albums/${id}`], { queryParams: { playlistId } });
-  }
-
-  artistProfile(id: string): void {
-    this.router.navigate([`/artists/${id}`]);
-  }
-
-
-  //! Function to add album to the library
-  addLibraryItem(): void {
-    if (this.playlistDetails) {
-      const libraryItem: LibraryItem = {
-        id: this.playlistDetails.id,
-        name: this.playlistDetails.name,
-        type: 'Playlist',
-        owner: this.playlistDetails.owner.display_name,
-        owner_id: this.playlistDetails.owner.id,
-        image: [
-          {
-            url: this.playlistDetails.images[0].url,
-            width: 0,
-            height: 0
-          }
-        ],
-        created_at: this.playlistDetails.tracks.items[0].added_at,
-        updated_at: this.playlistDetails.tracks.items[0].added_at
-      };
-  
-      this.libraryService.addLibraryItem(libraryItem).subscribe({
-        next: (item) => {
+    // Fetch playlist details from my API
+    this.apiService
+      .fetchPlaylistDetails(this.playlistId)
+      .pipe(
+        retry({
+          count: maxRetries,
+          delay: (retryCount) => timer(initialRetryDelay * (retryCount + 1))
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          // Update playlist details
+          this.playlistDetails = response;
+          // Set loading state to false
+          this.isLoading = false;
+          this.cdr.detectChanges();
         },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error adding library item:', error);
-          alert(`Failed to add library item: ${error.error.message}`);
-        }
+        error: (error) => {
+          // Handle error
+          console.error('Error fetching playlist details: ', error);
+          this.error = error;
+          // Set loading state to false
+          this.isLoading = false;
+        },
       });
-    }
-  }
-
-
-   //! Function to remove album from library
-   removeLibraryItem(id: string): void {
-    this.libraryService.removeLibraryItem(id).subscribe({
-      next: (libraryItems) => {
-        this.cdr.detectChanges();
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error removing library item:', error);
-        alert(`Failed to remove library item: ${error.error.message}`);
-      }
-    });
   }
 }

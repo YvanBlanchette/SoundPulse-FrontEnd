@@ -1,18 +1,24 @@
-<!-- user-button.component.html -->
+<!-- Menu Trigger -->
 <button mat-button [matMenuTriggerFor]="userMenu" class="flex items-center">
   <!-- User avatar -->
   <img [src]="(user$ | async)?.avatar" alt="User Image"
-    class="w-12 h-12 rounded-full object-cover border-[6px] border-black hover:border-[#272727]">
+    class="w-16 h-16 rounded-full object-cover border-[6px] border-[#1F1F1F] hover:border-[#383838] transition-all duration-300">
 </button>
-<!-- User menu -->
-<mat-menu #userMenu="matMenu" xPosition="before">
+
+<!-- Menu Content -->
+<mat-menu #userMenu="matMenu" xPosition="before" class="w-[200px]">
+    <!-- Menu Header with user name -->
     <p mat-menu-header class="font-semibold pb-1 w-full text-center border-b border-gray-300">
       {{ (user$ | async)?.name || 'Utilisateur' }}
     </p>
-    <button (click)="navigateToProfile()" mat-menu-item class="flex items-center">
+    
+    <!-- Menu Item - Profile -->
+    <button (click)="routingService.navigateByUrl('dashboard')" mat-menu-item class="flex items-center">
       <i class="fa-solid fa-user mr-1"></i>
       Mon Profil
     </button>
+
+    <!-- Menu Item - Logout -->
     <button (click)="logout()" mat-menu-item class="flex items-center">
       <i class="fa-solid fa-right-from-bracket mr-1"></i>
       <span>Déconnexion</span>

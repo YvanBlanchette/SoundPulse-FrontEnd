@@ -1,75 +1,124 @@
-<form [formGroup]="EditProfileForm" (submit)="onSubmit()" class="w-full">
+<!-- Overlay -->
+<div class="absolute bg-black/30 backdrop-blur-sm inset-0"></div>
+
+<!-- Edit Profile Modal -->
+<div
+  class="w-[90%] max-w-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-md p-8 text-gray-900">
+
+  <!-- Modal Header -->
+  <h2 class="text-3xl text-center font-semibold tracking-wider mb-4">Modifier mon profil</h2>
+
+  <!-- Edit Profile Form -->
+  <form [formGroup]="EditProfileForm" (submit)="onSubmit()">
     
-  <div class="flex flex-col gap-1 mt-4 w-full">
-     <div class="flex gap-4 items-baseline">
-       <label for="name">Nom complet <span class="text-red-500">*</span></label>
-       <div *ngIf="EditProfileForm.get('name')?.invalid && (EditProfileForm.get('name')?.dirty || EditProfileForm.get('name')?.touched)" class="text-red-500 text-xs">
-        {{ getErrorMessage('name', EditProfileForm.get('name')?.errors) }}
+    <!-- Name -->
+    <div class="flex flex-col gap-1 mt-4 w-full">
+      <!-- Label & Error message -->
+      <div class="flex gap-4 items-baseline">
+        <label for="name">Nom complet <span class="text-red-500">*</span></label>
+        <div
+          *ngIf="EditProfileForm.get('name')?.invalid && (EditProfileForm.get('name')?.dirty || EditProfileForm.get('name')?.touched)"
+          class="text-red-500 text-xs">
+          {{ getErrorMessage('name', EditProfileForm.get('name')?.errors) }}
+        </div>
       </div>
+      <!-- Input Field -->
+      <input type="text" id="name" formControlName="name" [value]="user?.name" placeholder="Entrez le nouveau nom"
+        class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="name" />
+    </div>
+
+    <!-- Email -->
+    <div class="flex flex-col gap-1 mt-6 w-full">
+      <!-- Label & Error message -->
+      <div class="flex gap-4 items-baseline">
+        <label for="email">Adresse courriel <span class="text-red-500">*</span></label>
+        <div
+          *ngIf="EditProfileForm.get('email')?.invalid && (EditProfileForm.get('email')?.dirty || EditProfileForm.get('email')?.touched)"
+          class="text-red-500 text-xs">
+          {{ getErrorMessage('email', EditProfileForm.get('email')?.errors) }}
+        </div>
       </div>
+      <!-- Input Field -->
+      <input type="email" id="email" formControlName="email" [value]="user?.email"
+        placeholder="Entrez votre nouvelle adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm"
+        autocomplete="email" />
+    </div>
 
-    <input type="text" id="name" formControlName="name" [value]="user?.name" placeholder="Entrez le nouveau nom" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="name" />
-  </div>
-
-  <div class="flex flex-col gap-1 mt-6 w-full">
-     <div class="flex gap-4 items-baseline">
-       <label for="email">Adresse courriel <span class="text-red-500">*</span></label>
-       <div *ngIf="EditProfileForm.get('email')?.invalid && (EditProfileForm.get('email')?.dirty || EditProfileForm.get('email')?.touched)" class="text-red-500 text-xs">
-        {{ getErrorMessage('email', EditProfileForm.get('email')?.errors) }}
-      </div>
-      </div>
-
-    <input type="email" id="email" formControlName="email" [value]="user?.email" placeholder="Entrez votre nouvelle adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="email" />
-  </div>
-
-  <div class="flex flex-col gap-1 mt-6 w-full">
-     <div class="flex gap-4 items-baseline">
-       <label for="email">Url de l'avatar <span class="text-red-500">*</span></label>
+    <!-- Avatar -->
+    <div class="flex flex-col gap-1 mt-6 w-full">
+      <!-- Label & Error message -->
+      <div class="flex gap-4 items-baseline">
+        <label for="email">Url de l'avatar <span class="text-red-500">*</span></label>
         <div *ngIf="EditProfileForm.get('avatar')?.errors" class="text-red-500 text-xs">
           {{ getErrorMessage('avatar', EditProfileForm.get('avatar')?.errors) }}
         </div>
       </div>
+      <!-- Input Field -->
+      <input type="text" id="avatar" formControlName="avatar" [value]="user?.avatar"
+        placeholder="Entrez votre nouvelle adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm"
+        autocomplete="avatar" />
+    </div>
 
-    <input type="text" id="avatar" formControlName="avatar" [value]="user?.avatar" placeholder="Entrez votre nouvelle adresse Courriel" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="avatar" />
-  </div>
+    <!-- Edit Password Checkbox -->
+    <div class="mt-4">
+      <label for="edit-password" class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="edit-password" (change)="toggleEditPassword()" class="cursor-pointer" /> Modifier le
+        mot de passe
+      </label>
+    </div>
 
-  <div class="mt-4">
-    <label for="edit-password" class="flex items-center gap-2 cursor-pointer">
-      <input type="checkbox" id="edit-password" (change)="toggleEditPassword()" class="cursor-pointer" /> Modifier le mot de passe
-    </label>
-  </div>
 
-  @if(isEditPassword) {
+    @if(isEditPassword) {
+    <!-- Password -->
     <div class="flex flex-col gap-1 mt-6 w-full">
+      <!-- Label & Error message -->
       <div class="flex gap-4 items-baseline">
         <label for="password">Mot de passe <span class="text-red-500">*</span></label>
-        <div *ngIf="EditProfileForm.get('password')?.invalid && (EditProfileForm.get('password')?.dirty || EditProfileForm.get('password')?.touched)" class="text-red-500 text-xs">
+        <div
+          *ngIf="EditProfileForm.get('password')?.invalid && (EditProfileForm.get('password')?.dirty || EditProfileForm.get('password')?.touched)"
+          class="text-red-500 text-xs">
           {{ getErrorMessage('password', EditProfileForm.get('password')?.errors) }}
         </div>
       </div>
-
-      <input type="password" id="password" formControlName="password" placeholder="Entrez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="new-password" />
+      <!-- Input Field -->
+      <input type="password" id="password" formControlName="password" placeholder="Entrez votre mot de passe"
+        class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="new-password" />
     </div>
+
+    <!-- Confirm Password -->
     <div class="flex flex-col gap-1 mt-6 w-full">
+      <!-- Label & Error message -->
       <div class="flex gap-4 items-baseline">
         <label for="confirm-password">Confirmer mot de passe <span class="text-red-500">*</span></label>
-         <div *ngIf="EditProfileForm.get('confirmPassword')?.invalid && (EditProfileForm.get('confirmPassword')?.dirty || EditProfileForm.get('confirmPassword')?.touched)" class="text-red-500 text-xs">
+        <div
+          *ngIf="EditProfileForm.get('confirmPassword')?.invalid && (EditProfileForm.get('confirmPassword')?.dirty || EditProfileForm.get('confirmPassword')?.touched)"
+          class="text-red-500 text-xs">
           {{ getErrorMessage('confirmPassword', EditProfileForm.get('confirmPassword')?.errors) }}
         </div>
         <div *ngIf="EditProfileForm.errors?.['mismatch']" class="text-red-500 text-xs">
           {{ getErrorMessage('confirmPassword', { mismatch: true }) }}
         </div>
       </div>
+      <!-- Input Field -->
+      <input type="password" id="confirm-password" formControlName="confirmPassword"
+        placeholder="Confirmez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm"
+        autocomplete="new-password" />
 
-    <input type="password" id="confirm-password" formControlName="confirmPassword" placeholder="Confirmez votre mot de passe" class="w-[100%] px-4 py-2 bg-[#1F1F1F] rounded-sm" autocomplete="new-password" />
-    
-  </div>
-}
-<div class="flex items-center justify-center gap-8">
-  <button (click)="onCancel()" class="mt-12 w-full py-2 bg-[#1F1F1F] rounded-md font-medium tracking-wide uppercase hover:bg-neutral-900 transition duration-300 cursor-pointer flex items-center justify-center gap-2">Annuler</button>  
-  
-  <button type="submit" [disabled]="!EditProfileForm.valid || isSubmitting" class="mt-12 w-full py-2 bg-gradient-to-br from-[#00C4FF] to-[#F700FD] rounded-md font-medium tracking-wide uppercase hover:opacity-85 transition-opacity duration-300 cursor-pointer flex items-center justify-center gap-2" [innerHTML]="isSubmitting ? '<i class=\'fa-solid fa-spinner animate-spin\'></i> En cours de soumission...' : 'Enregistrer'">
+    </div>
+    }
+
+    <!-- Submit Buttons -->
+    <div class="flex items-center justify-center gap-8 text-white">
+      <button type="submit" [disabled]="!EditProfileForm.valid || isSubmitting"
+        class="mt-12 w-full py-2 bg-gradient-to-br from-[#00C4FF] to-[#F700FD] rounded-md font-medium tracking-wide uppercase hover:opacity-85 transition-opacity duration-300 cursor-pointer flex items-center justify-center gap-2"
+        [innerHTML]="isSubmitting ? '<i class=\'fa-solid fa-spinner animate-spin\'></i> En cours de soumission...' : 'Enregistrer'">
+      </button>
+    </div>
+  </form>
+
+  <!-- Cancel Button  -->
+  <button (click)="onCancel()"
+    class="absolute top-4 right-4 w-8 h-8 rounded-full cursor-pointer flex items-center justify-center text-gray-900 hover:text-gray-500 ">
+    <i class="fa-solid fa-xmark text-xl"></i>
   </button>
 </div>
-  
-</form>

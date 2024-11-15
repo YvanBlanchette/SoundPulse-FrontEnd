@@ -2,38 +2,57 @@
   <div class="relative w-full h-full">
     <img [src]="searchBackground" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20 z-0" />
     <div class="absolute inset-0 w-full h-full z-10">
+      
+      <!-- Header -->
       <div class="h-[150px] w-full flex flex-col items-center justify-end pb-2">
         <h1 class="text-5xl font-bold tracking-wider">Résultats de la recherche</h1>
-        <p class="text-3xl">{{ query }}</p>
+        <!-- Query term -->
+        <p class="text-3xl capitalize">{{ query }}</p>
       </div>
 
-      @if(isLoading) {
+      @if(isLoading)
+      {
+
+        <!-- Loading Spinner -->
         <div class="h-[calc(100vh-330px)] w-[95%] mx-auto flex items-center justify-center">
           <app-progress-spinner />
         </div>
-      } @else {
 
-        
+      }
+      @else
+      {
+
+        <!-- Results Page -->
         <div class="h-[calc(100vh-330px)] w-[95%] mx-auto overflow-y-auto p-6 space-y-10">
+
+          <!-- Artists Collection -->
           <div>
-            <h2 class="text-2xl font-semibold tracking-wider mb-3 text-white">Artistes</h2>
-            <app-collection [collection]="searchResults?.artists" />
+            <h2 class="text-2xl font-semibold tracking-wider mb-4 text-white">Artistes trouvés</h2>
+            <app-collection [collection]="artists" />
           </div>
+
+          <!-- Albums Collection -->
           <div>
-            <h2 class="text-2xl font-semibold tracking-wider mb-3 text-white">Albums</h2>
-            <app-collection [collection]="searchResults?.albums" />
+            <h2 class="text-2xl font-semibold tracking-wider mb-4 text-white">Albums trouvés</h2>
+            <app-collection [collection]="albums" />
           </div>
+
+          <!-- Playlists Collection -->
           <div>
-            <h2 class="text-2xl font-semibold tracking-wider mb-3 text-white">Listes de lecture</h2>
-            <app-collection [collection]="searchResults?.playlists" />
+            <h2 class="text-2xl font-semibold tracking-wider mb-4 text-white">Listes de lecture trouvées</h2>
+            <app-collection [collection]="playlists" />
           </div>
-        <div class="mt-16">
-          <h2 class="text-2xl font-semibold tracking-wider text-white">Chansons</h2>
-          <div class="w-full">
-            <app-tracks-table [dataSource]="searchResults?.tracks" />
+
+          <!-- Tracks Table -->
+          <div class="mt-16">
+            <h2 class="text-2xl font-semibold tracking-wider text-white">Chansons trouvées</h2>
+            <div class="w-full">
+              <app-tracks-table [tracks]="tracks" />
+            </div>
           </div>
-        </div>
       </div>
     }
+    
     </div>
   </div>
+</div>

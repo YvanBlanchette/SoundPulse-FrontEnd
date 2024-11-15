@@ -1,32 +1,33 @@
 //* Module imports
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
 
 //* Component imports
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 
 //* Service imports
-import { SearchResultStoreService } from '@/app/services/search-results-store.service';
 import { Router } from '@angular/router';
 
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [MatFormFieldModule, MatIcon, MatInput],
+  imports: [MatInput],
   templateUrl: './search.component.html',
 })
 export class SearchComponent {
 
+  // Constructor with dependency injections
   constructor(private router: Router) { }
 
+  // Method to submit the search query to the Api
   onSubmit(query: string): void {
+    // Check if the query is not empty
     if (query.trim() !== '') {
+      // Navigate to the search results page with the query as a parameter
       this.router.navigate(['/search'], { queryParams: { q: query } });
     } else {
-      console.error('Search query cannot be empty');
+      // Log an error message
+      console.error('Vous devez entrer une recherche');
     }
   }
 }

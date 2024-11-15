@@ -1,6 +1,8 @@
 <div (click)="onSelectItem(item)" class="relative w-full flex items-center gap-3 hover:bg-[#1F1F1F] p-2 rounded-lg cursor-pointer">
-  <img [src]="item.image[0].url" alt="{{item.name}}" class="w-12 h-12 object-cover rounded" [ngClass]="{'artist': item.type === 'Artist'}">
+  <!-- Track thumbnail -->
+  <img [src]="item.images[0].url" alt="{{item.name}}" class="w-12 h-12 object-cover rounded" [ngClass]="{'artist': item.type === 'Artist'}">
 
+  <!-- Library track name & artist-->
   <div class="flex flex-col items-start justify-center">
     <p class="font-medium">{{item.name}}</p>
     <p class="text-sm text-gray-400">{{item.type}}
@@ -8,9 +10,8 @@
     </p>
   </div>
 
-  @if(item.type !== 'favourites') {
-    <button (click)="removeLibraryItem(item.id)" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full hover:text-gray-300/30 text-gray-300/15 border hover:border-gray-300/30 border-gray-300/15 transition-all duration-300 flex items-center justify-center"  title="Supprimer de la bibliothèque">
-      <i class="fa-solid fa-minus text-xs"></i>
+  <!-- Remove track from favourites button -->
+    <button matTooltip="Retirer de la bibliothèque" (click)="removeLibraryItem(item.id)" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full hover:text-gray-100 text-gray-300/15 transition-all duration-300 flex items-center justify-center">
+      <mat-icon>close</mat-icon>
     </button>
-  }
-  </div>
+</div>

@@ -12,19 +12,19 @@ import { Track } from '@/app/interfaces/track';
   providedIn: 'root'
 })
 export class CurrentTrackService {
-  //? Volume
+  // Volume
   private volumeSubject = new BehaviorSubject<number>(0.5);
   volume$: Observable<number> = this.volumeSubject.asObservable();
 
-  //? Current track
+  // Current track
   private trackSubject = new BehaviorSubject<Track | null>(null);
   currentTrack$: Observable<Track | null> = this.trackSubject.asObservable();
 
-  //? Loading
+  // Loading
   private loadingSubject = new BehaviorSubject<boolean>(false);
   loading$: Observable<boolean> = this.loadingSubject.asObservable();
 
-  //? Cache key
+  // Cache key
   private cacheKey = 'current-track';
 
   constructor(private cacheService: LocalStorageCacheService) {
@@ -38,24 +38,24 @@ export class CurrentTrackService {
     }
   }
 
-  //! Function to check if a track is selected
+  // Function to check if a track is selected
   isSelected(track: Track): boolean {
     return this.trackSubject.getValue()?.id === track.id
   }
 
-  //! Function to select a track
+  // Function to select a track
   selectTrack(track: Track): void {
     this.trackSubject.next(track);
     this.cacheService.setItem(this.cacheKey, track);
   }
 
-  //! Function to clear the current track
+  // Function to clear the current track
   clearTrack(): void {
     this.trackSubject.next(null);
     this.cacheService.removeItem(this.cacheKey);
   }
 
-  //! Function to load the current track
+  // Function to load the current track
   loadCurrentTrack(): void {
     this.loadingSubject.next(true);
     const cachedTrack = this.cacheService.getItem(this.cacheKey) as Track;
@@ -67,7 +67,7 @@ export class CurrentTrackService {
     }
   }
 
-  //! Function to set the volume
+  // Function to set the volume
   setVolume(volume: number): void {
     this.volumeSubject.next(volume);
   }

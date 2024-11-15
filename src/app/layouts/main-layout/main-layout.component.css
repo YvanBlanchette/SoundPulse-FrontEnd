@@ -3,11 +3,11 @@
 }
 
 .mat-sidenav {
-  @apply h-full w-0 bg-[#121213] text-gray-100 p-2 rounded-r-lg transition-all duration-300;
+  @apply h-full w-0 bg-[#121213] text-gray-100 p-2 rounded-r-lg transition-all duration-200 opacity-0 ;
 }
 
 .mat-sidenav.sidenav-open {
-  @apply w-[24%];
+  @apply w-[24%] opacity-100;
 }
 
 .mat-sidenav-content {

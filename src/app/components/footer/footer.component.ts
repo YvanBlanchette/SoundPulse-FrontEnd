@@ -1,4 +1,3 @@
-//* Module imports
 import { Component } from "@angular/core";
 
 //* Component imports
@@ -12,5 +11,6 @@ import { VolumeControlsComponent } from "@/app/components/_footer/volume-control
   imports: [SongDetailsComponent, PlayerComponent, VolumeControlsComponent],
   templateUrl: './footer.component.html',
 })
-  
+
+
 export class FooterComponent {}

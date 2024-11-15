@@ -29,9 +29,8 @@ import { ProgressSpinnerComponent } from '@/app/components/_shared/progress-spin
     CollectionComponent,
     PageHeaderComponent,
     PageOptionsComponent
-],
+  ],
   templateUrl: './artist-page.component.html',
-  styleUrl: './artist-page.component.css'
 })
 
 
@@ -47,10 +46,12 @@ export class ArtistPage implements OnInit, OnDestroy {
   // Albums data
   albums: AlbumResponse[] | null | undefined = null;
 
+
   // Private variables
   private destroy$ = new Subject<void>();
   private routeParamsSubscription: Subscription = new Subscription;
   private _artistDetails: ExtendedArtistResponse | null | undefined = null;
+
 
   // Constructor with dependencie injections
   constructor(
@@ -59,7 +60,8 @@ export class ArtistPage implements OnInit, OnDestroy {
     private apiService: ApiService,
     public routingService: RoutingService,
     public libraryService: LibraryService,
-  ) {}
+  ) { }
+
 
   // Setter for the artist details
   set artistDetails(value: ExtendedArtistResponse | null | undefined) {
@@ -70,10 +72,12 @@ export class ArtistPage implements OnInit, OnDestroy {
     }
   }
 
+
   // Getter for the artist details
   get artistDetails(): ExtendedArtistResponse | null | undefined {
     return this._artistDetails;
   }
+
 
   // On Initialize component
   ngOnInit(): void {
@@ -89,6 +93,7 @@ export class ArtistPage implements OnInit, OnDestroy {
     });
   }
 
+
   // On Destroy component
   ngOnDestroy(): void {
     // Unsubscribe and reset states
@@ -98,6 +103,7 @@ export class ArtistPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+
   // Reset component states
   resetState(): void {
     this.artistDetails = null;
@@ -106,6 +112,7 @@ export class ArtistPage implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
   }
+
 
   // Fetch artist details
   getArtistDetails(): void {
@@ -140,6 +147,7 @@ export class ArtistPage implements OnInit, OnDestroy {
           // Handle error
           console.error('Error fetching artist details:', error);
           this.error = error.message;
+          // Set loading state to false
           this.isLoading = false;
         },
       });

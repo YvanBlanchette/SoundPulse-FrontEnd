@@ -1,60 +1,26 @@
 <!-- Loading State -->
-@if(isLoading === true) {
+@if(isLoading === true)
+{
+
+  <!-- Loading Spinner -->
   <app-progress-spinner />
-} @else {
-<!-- Main Content -->
+
+}
+@else
+{
+
+  <!-- Main Content -->
 <div class="w-full h-full">
   <div class="relative w-full h-full">
     <img src="{{ trackDetails?.album?.images?.[0]?.url }}" alt="" class="absolute inset-0 w-full h-full object-cover object-top opacity-30 blur-sm">
 
-    <div class="absolute top-6 right-6">
-      <button [matMenuTriggerFor]="trackOptions" class="text-gray-100/50 hover:text-gray-100 transition-all duration-300 w-10 h-10 rounded-full flex items-center justify-center">
-        <i class="fa-solid fa-ellipsis-vertical text-2xl"></i>
-      </button>
-      <mat-menu #trackOptions="matMenu" xPosition="before">
-        @if(favouritesService.isFavourite(trackDetails) | async) {
-          <button (click)="favouritesService.removeFavourite(trackDetails)" mat-menu-item class="flex items-center justify-center">
-            <i class="fa-solid fa-minus mr-1"></i>
-            Retirer de mes favoris
-          </button>
-        } @else {
-          <button (click)="favouritesService.addFavourite(trackDetails)" mat-menu-item class="flex items-center justify-center">
-            <i class="fa-solid fa-plus mr-1"></i>
-            Ajouter à mes favoris
-          </button>
-        }
-      </mat-menu>
-    </div>
+    <!-- Page Options Menu (top-right)  -->
+    <app-page-options [itemDetails]="trackDetails" />
 
+    <!-- Page Header -->
+    <app-page-header [itemDetails]="trackDetails" />
 
-
-    <div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
-      <img src="{{ trackDetails?.album?.images?.[0]?.url }}" alt="" class="max-w-[175px] aspect-square object-cover rounded mr-6">
-      <div class="flex flex-col gap-1">
-        @if(favouritesService.isFavourite(trackDetails) | async) {
-          <div class="mb-1">
-            <span class="ml-4 relative">
-              <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
-              <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
-            </span>
-            <span class="ml-5 font-medium tracking-wide">Chanson favorite</span>
-          </div>
-        }
-        <!-- Display artist name -->
-        <h1 class="text-5xl font-bold tracking-wider mt-auto">{{ trackDetails?.name }}</h1>
-
-        <!-- Display followers count -->
-        <div class="flex items-center">
-          <a (click)="this.routingService.navigateTo(routingService.Categories.artist, trackDetails?.artists?.[0]?.id || '')" class="cursor-pointer hover:underline">{{trackDetails?.artists?.[0]?.name}}</a>
-          <span class="text-3xl font-extrabold mx-3">&#183;</span> 
-          <span><a (click)="onAlbumClick(trackDetails?.album)" class="cursor-pointer hover:underline">{{ trackDetails?.album.name }}</a></span> 
-          <span class="text-3xl font-extrabold mx-3">&#183;</span> 
-          <span>{{ trackDetails?.album.release_date?.slice(0, 4) }}</span> 
-        </div>
-      </div>
-    </div>
-
-    <!-- Display body -->
+    <!-- Page body -->
     <div class="absolute top-[230px] left-0 right-0 bottom-0 z-20 h-[calc(100vh-397px)] bg-gradient-to-t from-black via-black/60 to-transparent overflow-y-auto">
       <div class="p-6">
 
@@ -63,60 +29,9 @@
             <h2 class="text-2xl font-semibold tracking-wider mb-2">Chansons recommandées</h2>
 
             <!-- Tracks table -->
-            <table mat-table [dataSource]="recommendedTracks">
-              <!-- Index column -->
-              <ng-container matColumnDef="index">
-                <th mat-header-cell *matHeaderCellDef>#</th>
-                <td mat-cell *matCellDef="let track; let i = index" (click)="onTrackClick(track)" class=""> 
-                  {{ i + 1 }} 
-                </td>
-              </ng-container>
-            
-              <!-- Thumbnail column -->
-              <ng-container matColumnDef="thumbnail">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
-                  <img src="{{ track.album.images[0].url }}" alt="" class="w-12 h-12 rounded">
-                </td>
-              </ng-container>
-            
-              <!-- Name column -->
-              <ng-container matColumnDef="title">
-                <th mat-header-cell *matHeaderCellDef>Titre</th>
-                <td mat-cell *matCellDef="let track" class="py-4" (click)="onTrackClick(track)">
-                  <a (click)="this.routingService.navigateTo(routingService.Categories.track, track.id)" class="cursor-pointer hover:underline">{{ track.name }}</a></td>
-              </ng-container>
-
-              <!-- Artists column -->
-              <ng-container matColumnDef="artist">
-                <th mat-header-cell *matHeaderCellDef>Artiste(s)</th>
-                <td mat-cell *matCellDef="let track" class="py-4 artists" (click)="onTrackClick(track)">
-                  <span *ngFor="let artist of track.artists; let i = index">
-                    <a (click)="this.routingService.navigateTo(routingService.Categories.artist, artist.id)" class="cursor-pointer hover:underline">{{ artist.name }}</a><span *ngIf="i < track.artists.length - 1">, </span>
-                  </span>
-                </td>
-              </ng-container>
-            
-              <!-- Duration column -->
-              <ng-container matColumnDef="duration">
-                <th mat-header-cell *matHeaderCellDef class="durationHeader"><i class="fa-regular fa-clock mx-auto"></i></th>
-                <td mat-cell *matCellDef="let track" class="py-4 relative" (click)="onTrackClick(track)"> 
-                  {{ durationFormatter(track.duration_ms) }}
-                </td>
-              </ng-container>
-
-              <!-- Options -->
-              <ng-container matColumnDef="options">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let track" class="py-4 w-24">
-                  <app-favourites-button [track]="track" />
-                </td>
-              </ng-container>
-            
-              <!-- Table rows -->
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="cursor-pointer">
-            </table>
+            <div class="w-full">
+              <app-tracks-table [tracks]="tracks" />
+          </div>
           </div>
       </div>
     </div>

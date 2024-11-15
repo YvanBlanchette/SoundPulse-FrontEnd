@@ -14,13 +14,13 @@ import { User } from '@/app/interfaces/user';
   providedIn: 'root'
 })
 export class AuthService {
-  //? API URL
+  // API URL
   private apiUrl = env.API_URL;
 
-  //? Token
+  // Token
   private token: string | null = localStorage.getItem('token');
 
-  //! Function to update token
+  // Function to update token
   private updateToken(): void {
     this.token = localStorage.getItem('token');
     this.httpOptions = {
@@ -31,7 +31,7 @@ export class AuthService {
     };
   }
 
-  //? Http options
+  // Http options
   httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
@@ -43,18 +43,18 @@ export class AuthService {
     this.updateToken();
   }
 
-  //! Function to handle errors
+  // Function to handle errors
   private handleError(error: any) {
     console.error('Authentication Error: ', error);
     return throwError(() => error);
   }
 
-  //! Function to check if user is authenticated
+  // Function to check if user is authenticated
   isAuthenticated(): boolean {
     return !!this.token;
   }
 
-  //! Function to get the current user data
+  // Function to get the current user data
   getUser(): Observable<LoginResponse> {
     const endpoint = 'user';
 
@@ -63,13 +63,13 @@ export class AuthService {
     );
   }
 
-  //! Function to update the user data
+  // Function to update the user data
   updateUser(user: User): Observable<User> {
     const endpoint = 'user';
     return this.http.put<User>(`${this.apiUrl}/${endpoint}`, user, this.httpOptions);
   }
 
-  //! Function to login
+  // Function to login
   login(email: string, password: string): Observable<LoginResponse> {
     const endpoint = 'login';
     const data = { email, password };
@@ -86,7 +86,7 @@ export class AuthService {
     );
   }
 
-  //! Function to register
+  // Function to register
   register(name: string, email: string, password: string): Observable<LoginResponse> {
     const endpoint = 'register';
     const data = { name, email, password };
@@ -100,7 +100,7 @@ export class AuthService {
     );
   }
 
-  //! Function to logout
+  // Function to logout
   logout(): Observable<any> {
     const endpoint = 'logout';
 

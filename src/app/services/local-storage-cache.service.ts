@@ -4,14 +4,14 @@ import { Observable, of, tap } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class LocalStorageCacheService {
   
-  //? Reference to the local storage
+  // Reference to the local storage
   private storage: Storage = localStorage;
 
-  //? Expiry duration for cachied items (1 hour)
+  // Expiry duration for cachied items (1 hour)
   private expiryDuration: number = 60 * 60 * 1000;
 
 
-  //! Function to get item from cache
+  // Function to get item from cache
   getItem(key: string): any {
     const cachedData = this.storage.getItem(key);
     if (cachedData) {
@@ -26,31 +26,31 @@ export class LocalStorageCacheService {
   }
 
 
-  //! Function to set item in cache
+  // Function to set item in cache
   setItem(key: string, value: any): void {
     localStorage.setItem(key, JSON.stringify(value));
   }
 
 
-  //! Function to check if item exists in cache
+  // Function to check if item exists in cache
   hasItem(key: string): boolean {
     return this.storage.getItem(key) !== null; // Check if item exists
   }
 
 
-  //! Function to remove item from cache
+  // Function to remove item from cache
   removeItem(key: string): void {
     this.storage.removeItem(key);
   }
 
 
-  //! Function to clear entire cache
+  // Function to clear entire cache
   clearCache(): void {
     this.storage.clear(); // Clear entire cache
   }
 
 
-  //! Function to get item from cache or fetch it from the Api
+  // Function to get item from cache or fetch it from the Api
   getOrFetchItem(key: string, fetchFunction: () => Observable<any>): Observable<any> {
     const cachedItem = this.getItem(key);
     if (cachedItem) {

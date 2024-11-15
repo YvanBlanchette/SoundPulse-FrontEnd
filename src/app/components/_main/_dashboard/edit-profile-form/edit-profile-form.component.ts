@@ -5,7 +5,7 @@ import { UserService } from '@/app/services/user.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgIf } from '@angular/common';
 
-
+// Messages for form validation
 const FORM_VALIDATION_MESSAGES = {
   required: 'Ce champ est requis.',
   email: 'L\'adresse Courriel est invalide.',
@@ -25,30 +25,43 @@ const FORM_VALIDATION_MESSAGES = {
   templateUrl: './edit-profile-form.component.html',
   styleUrls: ['./edit-profile-form.component.css']
 })
+  
+  
 export class EditProfileFormComponent implements OnInit {
+  // Public Variables
   @Input() user: User | null = null;
   @Output() isEditMode = new EventEmitter<void>();
-
   isEditPassword: boolean = false;
   isSubmitting: boolean = false;
 
+  // Constructor with dependency injections
+  constructor(
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
-  constructor(private userService: UserService, private cdr: ChangeDetectorRef) { }
 
+  // Passwords validator
   passwordMatchValidator: ValidatorFn = (control: AbstractControl) => {
     const formGroup = control as FormGroup;
     const passwordControl = formGroup.get('password');
     const confirmPasswordControl = formGroup.get('confirmPassword');
 
+    // If password or confirm password is missing, return null
     if (!passwordControl || !confirmPasswordControl) {
       return null;
     }
 
+    // Get password and confirm password values
     const password = passwordControl.value;
     const confirmPassword = confirmPasswordControl.value;
+
+    // If passwords don't match, return mismatch error
     return password === confirmPassword ? null : { mismatch: true };
   }
 
+
+  // Form validation
   EditProfileForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -60,7 +73,9 @@ export class EditProfileFormComponent implements OnInit {
   });
 
 
+  // On initialize component
   ngOnInit(): void {
+    // Set form values with user data
     if (this.user) {
       this.EditProfileForm.setValue({
         name: this.user.name,
@@ -73,10 +88,13 @@ export class EditProfileFormComponent implements OnInit {
   }
 
 
+  // Toggle edit password mode
   toggleEditPassword() {
     this.isEditPassword = !this.isEditPassword;
   }
 
+
+  // Get error message
   getErrorMessage(controlName: string, errors: any): string {
     if (errors.required) {
       return FORM_VALIDATION_MESSAGES.required;
@@ -91,13 +109,21 @@ export class EditProfileFormComponent implements OnInit {
     }
   }
 
+  
+  // Cancel edit
   onCancel() {
     this.isEditMode.emit();
   }
 
+
+  // Submit form
   onSubmit() {
+    // If form is valid and user is defined
     if (this.EditProfileForm.valid && this.user) {
+      // Set isSubmitting to true
       this.isSubmitting = true;
+
+      // Get form values
       const userData: User = {
         name: this.EditProfileForm.get('name')?.value ?? '',
         email: this.EditProfileForm.get('email')?.value ?? '',
@@ -105,6 +131,7 @@ export class EditProfileFormComponent implements OnInit {
         password: this.EditProfileForm.get('password')?.value ?? '',
       };
   
+      // Update user data
       this.userService.updateUser(userData, this.user).subscribe(
         (updatedUser) => {
           this.cdr.detectChanges();
