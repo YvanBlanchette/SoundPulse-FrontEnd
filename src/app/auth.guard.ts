@@ -6,10 +6,15 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
+
+  // Constructor with dependencie injections
   constructor(private router: Router) {}
 
+  // Function to check if the user is authenticated
   async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+    // Get the auth token from local storage
     const token = localStorage.getItem('token');
+    // Check if the current route is the /auth route
     const isAuthRoute = state.url.startsWith('/auth');
 
     // If it is the /auth route and the user is authenticated...
@@ -23,18 +28,6 @@ export class AuthGuard implements CanActivate {
       this.router.navigate(['/auth']);
       return false;
     }
-
-    // Optional: Verify token validity using API
-    // try {
-    //   const response = await firstValueFrom(this.apiService.validateToken(token));
-    //   if (!response.valid) {
-    //     this.router.navigate(['/auth']);
-    //     return false;
-    //   }
-    // } catch (error) {
-    //   this.router.navigate(['/auth']);
-    //   return false;
-    // }
 
     return true;
   }

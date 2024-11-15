@@ -19,12 +19,14 @@
         <i class="fa-solid fa-ellipsis-vertical text-2xl"></i>
       </button>
       <mat-menu #trackOptions="matMenu" xPosition="before">
+        <h3 mat-menu-header class="text-gray-500 text-center pb-1 border-b-2 border-gray-300 ">Options Profil</h3>
         <button (click)="toggleEditMode()" mat-menu-item>
-          @if(isEditMode) {
-            Annuler
-          } @else {
+            <i class="fa-solid fa-pen-to-square mr-2"></i>
             Modifier mon profil
-          }
+        </button>
+        <button (click)="deleteAccount()" mat-menu-item >
+            <i class="fa-solid fa-trash mr-2 text-red-700"></i>
+            <span class="text-red-700">Supprimer mon compte</span>
         </button>
       </mat-menu>
     </div>

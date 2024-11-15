@@ -7,20 +7,17 @@ import { LibraryItem } from '@/app/interfaces/library-item';
 import { LocalStorageCacheService } from './local-storage-cache.service';
 
 
-/** 
- * Service for managing the selected library item
- */ 
+
 @Injectable({
   providedIn: 'root'
 })
   
 export class SelectedLibraryItemService {
 
-  // Subject for emitting the currently selected library item
+  // Selected Item Subject and Observable
   private selectedItemSubject = new BehaviorSubject<LibraryItem | null>(null);
-
-  // Observable for subscribing to selected library item changes
   selectedItem$ = this.selectedItemSubject.asObservable();
+
 
   // Key for caching the selected library item in local storage
   private cacheKey = 'cache-selected-library-item';

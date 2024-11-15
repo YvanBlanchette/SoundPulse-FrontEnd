@@ -1,7 +1,10 @@
-import { AuthService } from '@/app/services/auth.service';
 import { NgIf } from '@angular/common';
+import { Router } from '@angular/router';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators, ValidatorFn, AbstractControl, ReactiveFormsModule } from '@angular/forms';
+
+//* Service imports
+import { AuthService } from '@/app/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -12,7 +15,7 @@ import { FormControl, FormGroup, Validators, ValidatorFn, AbstractControl, React
 export class RegisterComponent {
   @Output() toggleRegistrationEvent = new EventEmitter<void>();
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router) { }
 
   passwordMatchValidator: ValidatorFn = (control: AbstractControl) => {
     const formGroup = control as FormGroup;
@@ -20,7 +23,7 @@ export class RegisterComponent {
     const confirmPasswordControl = formGroup.get('confirmPassword');
 
     if (!passwordControl || !confirmPasswordControl) {
-      return null; // or throw an error, depending on your requirements
+      return null;
     }
 
     const password = passwordControl.value;
@@ -39,17 +42,15 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      const { email, password } = this.registerForm.value;
+      const {name, email, password } = this.registerForm.value;
   
-      this.authService.register(name!,email!, password! ).subscribe(
-        (response) => {
-        },
+      this.authService.register(name ?? '', email ?? '', password ?? '' ).subscribe(
         (error) => {
           console.error(error);
         }
       );
     }
-    this.registerForm.reset();
+    this.router.navigate(['/']);
   }
 
   toggleRegistration() {

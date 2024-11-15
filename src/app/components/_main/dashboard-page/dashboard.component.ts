@@ -1,4 +1,4 @@
-import { Observable, tap } from 'rxjs';
+import { Observable, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
@@ -20,6 +20,8 @@ import { UserService } from '@/app/services/user.service';
 import { LibraryService } from '@/app/services/library.service';
 import { RoutingService } from '@/app/services/routing.service';
 import { FavouritesService } from '@/app/services/favourites.service';
+import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '@/app/services/auth.service';
 
 
 enum LibraryItemType {
@@ -37,6 +39,7 @@ enum LibraryItemType {
     AsyncPipe,
     DatePipe,
     MatMenuModule,
+    MatIconModule,
     EditProfileFormComponent,
     TracksTableComponent,
     CollectionComponent
@@ -66,6 +69,7 @@ export class DashboardPage implements OnInit {
   // Constructor with dependency injections
   constructor(
     private userService: UserService,
+    private authService: AuthService,
     private router: Router,
     public routingService: RoutingService,
     public favouritesService: FavouritesService,
@@ -138,5 +142,21 @@ export class DashboardPage implements OnInit {
   // Function to toggle edit mode
   toggleEditMode(): void {
     this.isEditMode = !this.isEditMode;
+  }
+
+
+  // Function to delete account
+  deleteAccount() {
+    // Ask for confirmation
+    if (confirm("Êtes-vous certain de vouloir supprimer votre compte ?")) {
+      // Delete account using the UserService
+      this.userService.deleteUser()
+      .subscribe({
+        error: (error) => {
+          // Log the error
+          console.error('Une erreur s\'est produite lors de la suppression du compte: ', error);
+        }
+      });
+    }
   }
 }

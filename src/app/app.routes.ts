@@ -16,44 +16,53 @@ import { DashboardPage } from '@/app/components/_main/dashboard-page/dashboard.c
 
 export const routes: Routes = [
   {
+    // Auth layout route
     path: 'auth',
     component: AuthLayout,
     canActivate: [AuthGuard],
   },
   {
+    // Main layout route
     path: '',
     canActivate: [AuthGuard],
     component: MainLayout,
     children: [
       {
+        // Default route
         path: '',
         component: WelcomePageComponent
       },
       {
+        // Artist route
         path: 'artists/:id',
         component: ArtistPage,
         runGuardsAndResolvers: 'paramsChange'
       },
       {
+        // Album route
         path: 'albums/:id',
         component: AlbumPage,
         runGuardsAndResolvers: 'paramsChange'
       },
       {
+        // Track route
         path: 'tracks/:id',
         component: TrackPage,
         runGuardsAndResolvers: 'paramsChange'
       },
       {
+        // Playlist route
         path: 'playlists/:id',
         component: PlaylistPage,
         runGuardsAndResolvers: 'paramsChange'
       },
       {
+        // Search route
         path: 'search',
         component: SearchResultsPage
       },
       {
+        // Dashboard route
         path: 'dashboard',
         component: DashboardPage
       },

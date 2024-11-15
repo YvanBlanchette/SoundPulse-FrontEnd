@@ -1,78 +1,113 @@
+import { Router } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, of, retry, shareReplay, tap, throwError, timeout } from 'rxjs';
 
 //* Interface imports
+import { User } from '@/app/interfaces/user';
 import { NewAlbums } from '@/app/interfaces/new-albums';
 import { LibraryItem } from '@/app/interfaces/library-item';
-import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
-import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { SearchResults } from '@/app/interfaces/search-results';
-import { PlaylistResponse } from '@/app/interfaces/playlist-response';
-import { User } from '@/app/interfaces/user';
+import { LoginResponse } from '@/app/interfaces/login-response';
 import { FavouriteTrack } from '@/app/interfaces/favourite-track';
+import { PlaylistResponse } from '@/app/interfaces/playlist-response';
+import { ExtendedAlbumResponse } from '@/app/interfaces/extended-album-response';
 import { FavouriteTrackRequest } from '@/app/interfaces/favourite-track-request';
+import { ExtendedArtistResponse } from '@/app/interfaces/extended-artist-response';
 
 //* Environment imports
 import { env } from '@/env/environment';
 
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+  // API URL
   private apiUrl = env.API_URL;
-  private token = localStorage.getItem('token');
+
+  // Token
+  private token: string | null = localStorage.getItem('token');
+
+  // HTTP options
   private httpOptions = {
-    headers: new HttpHeaders({ 
-      'Content-Type': 'application/json',  
-      'Authorization': `Bearer ${this.token}`
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${this.token}`,
     }),
   };
 
+
   // Observable for current track
   private currentTrackSubject = new BehaviorSubject<any | null>(null);
-
   currentTrack$: Observable<any | null> = this.currentTrackSubject.asObservable();
 
-  constructor(private http: HttpClient) { }
+
+  // Constructor with dependency injection
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
+
 
   // Function to handle errors
   private handleError(error: any) {
     console.error('API Call Error: ', error);
-    
-    if (error.status === 401) {
-      // Handle unauthorized error
-      // Logout user, redirect to login page, etc.
-    } else if (error.status === 500) {
-      // Handle internal server error
-      // Display error message to user, etc.
-    }
-    
     return throwError(() => error);
   }
 
 
-  // Generic function to fetch data from API
-  private get<T>(endpoint: string): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
-      retry(2),
-      timeout(10000),
-      catchError((error) => this.handleError(error)),
-      shareReplay(1)
-    );
+  // Generic API call function depending on the HTTP method
+  private apiCall<T>(method: string, endpoint: string, body?: any): Observable<T> {
+    switch (method.toUpperCase()) {
+      case 'GET':
+        return this.http.get<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
+          retry(3),
+          timeout(10000),
+          catchError((error) => this.handleError(error)),
+          shareReplay(1)
+        );
+      case 'POST':
+        return this.http.post<T>(`${this.apiUrl}/${endpoint}`, body, this.httpOptions).pipe(
+          retry(3),
+          timeout(10000),
+          catchError((error) => this.handleError(error)),
+          shareReplay(1)
+        );
+      case 'PUT':
+        return this.http.put<T>(`${this.apiUrl}/${endpoint}`, body, this.httpOptions).pipe(
+          retry(3),
+          timeout(10000),
+          catchError((error) => this.handleError(error)),
+          shareReplay(1)
+        );
+      case 'DELETE':
+        return this.http.delete<T>(`${this.apiUrl}/${endpoint}`, this.httpOptions).pipe(
+          retry(3),
+          timeout(10000),
+          catchError((error) => this.handleError(error)),
+          shareReplay(1)
+        );
+      default:
+        throw new Error(`Invalid HTTP method: ${method}`);
+    }
   }
 
 
-  // Function to get library items
+
+  // -------------------------------- LIBRARY -------------------------------- //
+
+  // Function to get library items (GET request)
   getLibraryItems(): Observable<LibraryItem[]> {
-    return this.get<LibraryItem[]>('library');
+    return this.apiCall<LibraryItem[]>('GET', 'library');
   }
 
 
   // Function to format library items
   getFormattedLibraryItems(): Observable<LibraryItem[]> {
     return this.getLibraryItems().pipe(
+      // Map the response to an array of library items
       map((libraryItems) => {
         if (!Array.isArray(libraryItems) || libraryItems.length === 0) {
-          return []; 
+          return [];
         }
         return libraryItems
           .map((item: LibraryItem) => ({
@@ -89,35 +124,36 @@ export class ApiService {
   }
 
 
-  // Function to add a new item to the library
+  // Function to add a new item to the library (POST request)
   addLibraryItem(item: LibraryItem): Observable<LibraryItem> {
-    return this.http.post<LibraryItem>(`${this.apiUrl}/library`, item, this.httpOptions).pipe(
-      catchError((error) => this.handleError(error))
-    );
+    return this.apiCall<LibraryItem>('POST', 'library', item);
   }
 
 
-  // Function to remove an item to the library
+  // Function to remove an item to the library (DELETE request)
   removeLibraryItem(id: string): Observable<LibraryItem> {
-    return this.http.delete<LibraryItem>(`${this.apiUrl}/library/${id}`, this.httpOptions).pipe(
-      catchError((error) => this.handleError(error))
-    );
+    return this.apiCall<LibraryItem>('DELETE', `library/${id}`);
   }
 
 
-  // Function to get album details
+
+  // -------------------------------- ITEMS DETAILS -------------------------------- //
+
+  // Function to get album details (GET request)
   fetchAlbumDetails(albumId: string, artistId: string): Observable<ExtendedAlbumResponse> {
-    return this.get<ExtendedAlbumResponse>(`albums/${albumId}?artistId=${artistId}`);
+    return this.apiCall<ExtendedAlbumResponse>('GET', `albums/${albumId}?artistId=${artistId}`);
   }
 
 
-  // Function to get artist details
+  // Function to get artist details (GET request)
   fetchArtistDetails(artistId: string): Observable<ExtendedArtistResponse> {
-    return this.get<ExtendedArtistResponse>(`artists/${artistId}`);
+    return this.apiCall<ExtendedArtistResponse>('GET', `artists/${artistId}`);
   }
 
+
+  // Function to get track details (GET request)
   fetchTrackDetails(id: string): Observable<any> {
-    return this.get<any>(`tracks/${id}/details`).pipe(
+    return this.apiCall<any>('GET', `tracks/${id}/details`).pipe(
       tap((track) => {
         this.currentTrackSubject.next(track);
       }),
@@ -128,33 +164,36 @@ export class ApiService {
     );
   }
 
-   // Function to get playlist details
-   fetchPlaylistDetails(Id: string): Observable<PlaylistResponse> {
-    return this.get<PlaylistResponse>(`playlists/${Id}`);
+
+  // Function to get playlist details (GET request)
+  fetchPlaylistDetails(Id: string): Observable<PlaylistResponse> {
+    return this.apiCall<PlaylistResponse>('GET', `playlists/${Id}`);
   }
 
 
-  // Function to get new albums
+  // Function to get new albums (GET request)
   getNewAlbums(): Observable<NewAlbums> {
-    return this.get<NewAlbums>('albums/new-releases');
+    return this.apiCall<NewAlbums>('GET', 'albums/new-releases');
   }
 
 
-/**
- *  FAVOURITE SONGS
- */
-  // Function to get favourite songs
+
+  // -------------------------------- FAVOURITE SONGS -------------------------------- //
+
+  // Function to get favourite songs (GET request)
   getFavouriteSongs(): Observable<FavouriteTrack[]> {
-    return this.http.get<FavouriteTrack[]>(`${this.apiUrl}/favourites`, this.httpOptions);
+    return this.apiCall<FavouriteTrack[]>('GET', 'favourites');
   }
 
 
   // Function to format favourite songs
   getFormattedFavouriteSongs(): Observable<FavouriteTrack[]> {
+    // Fetch favourite songs
     return this.getFavouriteSongs().pipe(
+      // Map the response to an array of favourite tracks
       map((response) => {
         if (!Array.isArray(response) || response.length === 0) {
-          return []; 
+          return [];
         }
         return response
           .map((item: any) => ({
@@ -169,8 +208,10 @@ export class ApiService {
     );
   }
 
-  // Function to add favourite track
+
+  /// Function to add favourite track (POST request)
   addFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
+    // Prepare the song data
     const songData = {
       song_id: trackRequest.song_id,
       name: trackRequest.name,
@@ -179,72 +220,164 @@ export class ApiService {
       preview_url: trackRequest.preview_url
     };
 
-    return this.http.post(`${this.apiUrl}/favourites`, songData, this.httpOptions).pipe(
-      catchError(this.handleError),
+    // Make the request
+    return this.apiCall('POST', 'favourites', songData).pipe(
       tap(() => {
-        // Update local storage
+        // Get the favourite track ids from local storage
         const favouriteTrackIds = JSON.parse(localStorage.getItem('favourite-track-ids') || '[]');
+        // Add the new track id
         favouriteTrackIds.push(trackRequest.song_id);
+        // Set the updated track ids to local storage
         localStorage.setItem('favourite-track-ids', JSON.stringify(favouriteTrackIds))
       })
     );
   }
 
 
-  // Function to remove favourite track
+  // Function to remove a track from the favourites (DELETE request)
   removeFavouriteSong(trackRequest: FavouriteTrackRequest): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/favourites/${trackRequest.song_id}`, this.httpOptions).pipe(
+    return this.apiCall('DELETE', `favourites/${trackRequest.song_id}`).pipe(
       catchError((error: HttpErrorResponse) => {
+        // Handle 404 error
         if (error.status === 404) {
-          console.error('Favourite song not found');
-          // Handle 404 error
+          console.error('Chanson non trouvée dans les favoris.');
         } else {
-          console.error('Error removing favourite track:', error);
+          console.error('Une erreur s\'est produite: ', error);
         }
         return throwError(() => error);
       })
     );
   }
 
-
-  // Function to check if a song is in the favourites
+  // Function to check if a track is in the favourites (GET request)
   isFavourite(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/favourites/is_favourite/${id}`);
+    return this.apiCall('GET', `favourites/is_favourite/${id}`);
   }
 
 
-/**
- * SEARCH RESULTS
- */
-  // Function to get search results
+
+  // -------------------------------- SEARCH RESULTS -------------------------------- //
+
+  // Function to get search results (GET request)
   getSearchResults(query: string, type: string = 'track,artist,album,playlist'): Observable<SearchResults> {
+    // Check if the query is not empty
     if (!query.trim()) {
-      throw new Error('Search query cannot be empty');
+      throw new Error('La recherche ne peut pas être vide.');
     }
 
-    return this.http.get<SearchResults>(`${this.apiUrl}/search?q=${query}&type=${type}`, this.httpOptions).pipe(
-      retry(2),
-      timeout(10000),
-      catchError(this.handleError),
-      shareReplay(1)
+    // Make the API request with the query parameter
+    return this.apiCall<SearchResults>('GET', `search?q=${query}&type=${type}`);
+  }
+
+
+
+  // -------------------------------- AUTH -------------------------------- //
+
+  // Function to update the auth token
+  updateToken(): void {
+    // Get the token from local storage
+    this.token = localStorage.getItem('token');
+    // Update the HTTP options with the new token
+    this.httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      }),
+    };
+  }
+
+
+  // Function to login to account
+  login(email: string, password: string): Observable<LoginResponse> {
+    // Prepare the login data
+    const data = { email, password };
+
+    // Make the API request with the login data as parameters
+    return this.apiCall<LoginResponse>('POST', 'login', data).pipe(
+      // Update the auth token
+      tap((response: LoginResponse) => {
+        localStorage.setItem('token', response.token);
+        this.updateToken();
+        // Navigate to the home page
+        this.router.navigate(['/']);
+      })
+    );
+  }
+
+  // Function to register a new account
+  register(name: string, email: string, password: string): Observable<LoginResponse> {
+    // Prepare the registration data
+    const data = { name, email, password };
+
+    // Make the API request with the registration data as parameters
+    return this.apiCall<LoginResponse>('POST', 'register', data).pipe(
+      // Update the auth token
+      tap((response: LoginResponse) => {
+        localStorage.setItem('token', response.token);
+        this.updateToken();
+        // Navigate to the home page
+        this.router.navigate(['/']);
+      })
     );
   }
 
 
-/**
- * USER
- */
-  // Function to get the current user
+  // Function to logout
+  logout(): Observable<any> {
+    // Make the API request
+    return this.apiCall('POST', 'logout').pipe(
+      // Remove the auth token from local storage
+      tap((response) => {
+        localStorage.removeItem('token');
+        this.updateToken();
+        // Redirect to the auth page
+        this.router.navigate(['/auth']);
+      })
+    );
+  }
+
+
+  // Function to check if user is authenticated
+  isAuthenticated(): boolean {
+    return !!this.token;
+  }
+
+
+
+  // -------------------------------- USER -------------------------------- //
+
+  // Function to get the current user (GET request)
   getUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/user`, this.httpOptions).pipe(
-      catchError((error) => this.handleError(error))
-    );
+    return this.apiCall<User>('GET', 'user');
   }
 
-  // Function to update the current user
+
+  // Function to update the current user (PUT request)
   updateUser(user: User): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/user`, user, this.httpOptions).pipe(
-      catchError((error) => this.handleError(error))
-    );
+    return this.apiCall<User>('PUT', 'user', user);
   }
+
+
+  // Function to delete the current user account (DELETE request)
+  deleteUser(userId: number): Observable<any> {
+  // Prepare the URL
+    const url = `user/${userId}`;
+
+    // Make the request
+    return this.apiCall<User>('DELETE', url).pipe(
+      tap(() => {
+        // Remove the auth token from local storage
+        localStorage.removeItem('token');
+        // Update the token
+        this.updateToken();
+        // Redirect to the auth page
+        this.router.navigate(['/auth']);
+      }),
+      catchError((error) => {
+        // Handle the error
+        console.error('Erreur de suppression:', error);
+        throw error;
+      })
+  );
+}
 }
