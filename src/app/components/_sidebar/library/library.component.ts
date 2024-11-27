@@ -1,6 +1,8 @@
-import { Subject, takeUntil } from 'rxjs';
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChanges, OnChanges } from '@angular/core';
+// library.component.ts
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { Subject, takeUntil, map, Observable } from 'rxjs';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChanges, OnChanges } from '@angular/core';
 
 //* Component imports
 import { LibraryItemComponent } from '@/app/components/_sidebar/library-item/library-item.component';
@@ -15,7 +17,7 @@ import { LibraryService } from '@/app/services/library.service';
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [LibraryItemComponent, MatIconModule],
+  imports: [LibraryItemComponent, MatIconModule, AsyncPipe, NgIf, NgFor],
   templateUrl: './library.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
@@ -24,12 +26,8 @@ import { LibraryService } from '@/app/services/library.service';
 export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
   // Variables
   @Input() filter: string = 'all';
-  libraryItems: LibraryItem[] | null = null;
-  selectedItem: LibraryItem | null = null;
-  favouriteSongs: LibraryItem[] | null = null;
   isLoading = true;
   errorMessage = '';
-  filteredLibraryItems: LibraryItem[] | null = null;
 
 
   // Constructor with dependency injection
@@ -37,24 +35,33 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef) {}
 
+
   // Subjects
   private ngUnsubscribe = new Subject();
+  libraryItems$: Observable<LibraryItem[] | null> | null = null;
+  filteredLibraryItems$: Observable<LibraryItem[] | null> | null = null;
 
+  trackItem(index: number, item: LibraryItem) {
+    return item.id;
+  }
 
   // On Initialize component
   ngOnInit(): void {
-    this.cdr.detectChanges();
-    this.libraryService.library$.pipe(
+    this.libraryItems$ = this.libraryService.library$;
+    this.filteredLibraryItems$ = this.libraryItems$.pipe(
+      map((libraryItems) => this.filterItems(libraryItems)),
+      takeUntil(this.ngUnsubscribe)
+    );
+    this.libraryItems$.pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
-      next: (libraryItems) => {
-        this.libraryItems = libraryItems;
-        this.filterLibraryItems();
+      next: () => {
         this.isLoading = false;
       },
       error: (error: any) => {
-        console.error('Error fetching library items:', error);
+        console.error('Une erreur s\'est produite lors de la récupération des éléments de la bibliothèque:', error);
         this.isLoading = false;
+        this.errorMessage = error.message;
       }
     });
   }
@@ -69,28 +76,41 @@ export class LibraryComponent implements OnInit, OnDestroy, OnChanges {
   // On changes
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filter']) {
-      this.filterLibraryItems();
+      this.filteredLibraryItems$ = this.libraryItems$?.pipe(
+        map((libraryItems) => this.filterItems(libraryItems)),
+        takeUntil(this.ngUnsubscribe)
+      ) ?? null; // Add nullish coalescing operator
+    } else {
+      this.filteredLibraryItems$ = null; // Ensure it's reset to null
     }
   }
 
 
   // Filter library items by type
-  filterLibraryItems(): void {
-    if (this.libraryItems) {
+  filterItems(libraryItems: LibraryItem[] | null): LibraryItem[] | null {
+    if (libraryItems) {
       switch (this.filter) {
         case 'artist':
-          this.filteredLibraryItems = this.libraryItems.filter((item) => item.type === 'Artist');
-          break;
+          return libraryItems.filter((item) => item.type === 'Artist');
         case 'album':
-          this.filteredLibraryItems = this.libraryItems.filter((item) => item.type === 'Album');
-          break;
+          return libraryItems.filter((item) => item.type === 'Album');
         case 'playlist':
-          this.filteredLibraryItems = this.libraryItems.filter((item) => item.type === 'Playlist');
-          break;
+          return libraryItems.filter((item) => item.type === 'Playlist');
         default:
-          this.filteredLibraryItems = this.libraryItems;
-          break;
+          return libraryItems;
       }
     }
+    return null;
+  }
+
+
+  // Remove a library item
+  removeItem(id: string): void {
+    this.libraryService.removeLibraryItem(id).subscribe({
+      next: () => {},
+      error: (error) => {
+        console.error('Une erreur s\'est produite lors de la suppression:', error);
+      }
+    });
   }
 }

@@ -4,9 +4,17 @@
   <!-- Page content -->
   <mat-sidenav-container class=" flex-1 mat-sidenav-container overflow-hidden bg-black" [hasBackdrop]="false" [autosize]="false">
     <!-- Sidebar -->
-    <mat-sidenav #sidenav class="mat-sidenav overflow-hidden mg-6" [class.sidenav-open]="sidenav?.opened" [class.sidenav-closed]="!sidenav?.opened">
+    <mat-sidenav #sidenav class="relative mat-sidenav overflow-hidden mg-6" [class.sidenav-open]="sidenav?.opened" [class.sidenav-closed]="!sidenav?.opened">
       <div class="mat-drawer-inner-container">
         <app-sidebar class="overflow-hidden" />
+        <button type="button" (click)="sidenav?.toggle()" class="lg:hidden absolute top-6 right-4 z-50 w-8 h-8 rounded-full text-gray-300/90 hover:text-gray-100 transition-all duration-300">
+          @if(sidenav?.opened) {
+            <i class="fa-solid fa-chevron-left text-xl" matTooltip="Fermer la bibliothèque"></i>
+          }
+          @else {
+            <i class="fa-solid fa-chevron-right text-xl" matTooltip="Ouvrir la bibliothèque"></i>
+          }
+        </button>
       </div>
     </mat-sidenav>
     
@@ -29,4 +37,7 @@
   
   <!-- Page footer -->
   <app-footer class="h-[80px] w-full bg-black text-gray-100 px-6" />
+
+  <!-- Disclaimer -->
+  <app-disclaimer />
 </div>

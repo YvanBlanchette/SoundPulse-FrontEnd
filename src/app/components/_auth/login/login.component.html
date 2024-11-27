@@ -1,6 +1,7 @@
 <div class="w-[90%] max-w-xl mx-auto h-screen flex flex-col items-center justify-center text-gray-100">
-  <h1 class="text-[2.5rem] font-bold tracking-wider bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent">Bienvenue sur SoundPulse</h1>
-  <p class="text-base">Connectez-vous pour commencer à écouter votre musique préférée!</p>
+  <img src="/assets/images/soundpulse_logo-full.svg" alt="SoundPulse logo" class="z-50 w-full lg:hidden">
+  <h1 class="hidden lg:block text-2xl lg:text-[2.5rem] font-bold tracking-wider bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent">Bienvenue sur SoundPulse</h1>
+  <p class="text-center lg:text-start lg:text-base mt-2 mb-6">Connectez-vous pour commencer à écouter votre musique préférée!</p>
 
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="w-full">
     

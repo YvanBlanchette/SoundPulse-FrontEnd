@@ -1,36 +1,38 @@
-<div class="absolute z-10 p-6 pl-16 h-[230px] flex items-end">
+<div class="absolute inset-0 top-6 z-10 p-6 pl-16 h-[230px] flex flex-col lg:flex-row items-center lg:items-end">
   @if(itemDetails?.type === 'track')
   {
-    <img (click)="this.currentTrackService.selectTrack(itemDetails)" [src]="itemDetails?.album.images?.[0]?.url" [alt]="itemDetails?.album.name" class="cursor-pointer hover:brightness-75 max-w-[175px] aspect-square object-cover rounded mr-6">
+    <img (click)="this.currentTrackService.selectTrack(itemDetails)" [src]="itemDetails?.album.images?.[0]?.url" [alt]="itemDetails?.album.name" class="cursor-pointer hover:brightness-75  w-full max-w-[225px] lg:max-w-[175px] aspect-square object-cover rounded mr-6">
   } @else {
-    <img [src]="itemDetails?.images?.[0]?.url" [alt]="itemDetails?.name" class="max-w-[175px] aspect-square object-cover rounded{{itemDetails?.type === 'artist' ? '-full' : ''}} mr-6">
+    <img [src]="itemDetails?.images?.[0]?.url" [alt]="itemDetails?.name" class="w-full max-w-[225px] lg:max-w-[175px] aspect-square object-cover rounded{{itemDetails?.type === 'artist' ? '-full' : ''}} mr-6">
   }
   <div class="flex flex-col gap-1">
-    @if(itemDetails?.type === 'track') {
-      <!-- Added to Favourites badge -->
-      @if(favouritesService.isFavourite(itemDetails) | async) {
-        <div class="mb-1">
-          <span class="ml-4 relative">
-            <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
-            <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
-          </span>
-          <span class="ml-5 font-medium tracking-wide">dans les Favoris</span>
-        </div>
+    <div class="flex flex-row-reverse lg:flex-col">
+      @if(itemDetails?.type === 'track') {
+        <!-- Added to Favourites badge -->
+        @if(favouritesService.isFavourite(itemDetails) | async) {
+          <div class="mb-0 lg:mb-4 flex lg:items-center">
+            <span class="ml-2 mt-2 lg:mt-0 lg:ml-4 relative">
+              <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
+              <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
+            </span>
+            <span class="hidden lg:block ml-5 font-medium tracking-wide">dans les Favoris</span>
+          </div>
+        }
+      } @else {
+        <!-- Added to library badge -->
+        @if(libraryService.isItemInLibrary(itemDetails.id) | async) {
+          <div class="mb-0 lg:mb-4 flex lg:items-center">
+            <span class="ml-2 mt-2 lg:mt-0 lg:ml-4 relative">
+              <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
+              <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
+            </span>
+            <span class="hidden lg:block ml-5 font-medium tracking-wide">Ajouté à la bibliothèque</span>
+          </div>
+        }
       }
-    } @else {
-      <!-- Added to library badge -->
-      @if(libraryService.isItemInLibrary(itemDetails.id) | async) {
-        <div class="mb-1">
-          <span class="ml-4 relative">
-            <i class="fa-solid fa-certificate absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl  bg-gradient-to-br from-[#00C4FF] to-[#F700FD] bg-clip-text text-transparent"></i>
-            <i class="fa-solid fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-white"></i>
-          </span>
-          <span class="ml-5 font-medium tracking-wide">Ajouté à la bibliothèque</span>
-        </div>
-      }
-    }
-    <!-- Item name -->
-    <h1 class="text-6xl font-bold tracking-wider mt-auto">{{ itemDetails?.name }}</h1>
+      <!-- Item name -->
+      <h1 class="text-2xl lg:text-6xl text-center lg:text-start font-bold tracking-wider mt-2 lg:mt-auto w-full">{{ itemDetails?.name }}</h1>
+    </div>
 
     <!-- MetaData -->
     <div class="flex items-center">

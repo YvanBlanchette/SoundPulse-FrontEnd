@@ -1,13 +1,13 @@
 <!-- Library header -->
 <div class="bg-[#121213] w-full flex flex-col justify-between items-center p-4 border-b-2 border-[#1F1F1F] shadow-2xl shadow-[#1F1F1F]">
   <div class=" w-full flex justify-between items-center">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 justify-center lg:justify-start w-full">
       <i class="fa-solid fa-lines-leaning text-3xl ml-2"></i>
       <span class="font-semibold text-2xl">Votre Bibliothèque</span>
     </div>
 
     <!-- Go to Dashboard Button -->
-    <button (click)="routingService.navigateByUrl('dashboard')" matTooltip="Aller au profil" class="focus:outline-none w-8 h-8 text-gray-300/50 hover:text-gray-100 rounded-full transition flex justify-center items-center">
+    <button (click)="routingService.navigateByUrl('dashboard')" matTooltip="Aller au profil" class="hidden lg:flex focus:outline-none w-8 h-8 text-gray-300/50 hover:text-gray-100 rounded-full transition justify-center items-center">
       <mat-icon>star</mat-icon>
     </button>
   </div>

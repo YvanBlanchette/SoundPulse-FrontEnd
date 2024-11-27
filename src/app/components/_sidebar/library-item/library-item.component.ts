@@ -1,6 +1,6 @@
 import { NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, Input} from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 
 //* Component imports
@@ -23,8 +23,9 @@ import { LibraryService } from '@/app/services/library.service';
 })
 
 
-export class LibraryItemComponent {
+export class LibraryItemComponent implements OnChanges {
   @Input() item!: LibraryItem;
+  @Output() removeItem = new EventEmitter<string>();
 
 
   // Constructor with dependency injection
@@ -33,6 +34,13 @@ export class LibraryItemComponent {
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef
   ) {}
+
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['item']) {
+      this.cdr.detectChanges();
+    }
+  }
 
 
   // Function to navigate to the item's page
@@ -54,16 +62,8 @@ export class LibraryItemComponent {
   }
 
 
-  // Function to remove a library item
+  // Function to remove a library item and emit an event
   removeLibraryItem(id: string): void {
-    this.libraryService.removeLibraryItem(id).subscribe({
-      next: (libraryItems) => {
-        this.cdr.detectChanges();
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error removing library item:', error);
-        alert(`Failed to remove library item: ${error.error.message}`);
-      }
-    });
+    this.removeItem.emit(id);
   }
 }

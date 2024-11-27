@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ChangeDetectorRef, Injectable } from '@angular/core';
 import { Observable, tap, catchError, throwError, ReplaySubject, filter, switchMap, map } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -12,15 +12,13 @@ import { ApiService } from '@/app/services/api.service';
 @Injectable({
   providedIn: 'root'
 })
-
-
 export class LibraryService {
   // Library Subject and Observable
   private librarySubject = new ReplaySubject<LibraryItem[] | null>(1);
   library$: Observable<LibraryItem[] | null> = this.librarySubject.asObservable();
 
 
-  // Constructor with dependencie injections
+  // Constructor with dependency injections
   constructor(
     private apiService: ApiService,
   ) { this.initLibrary(); }
@@ -31,8 +29,12 @@ export class LibraryService {
     // Get formatted library items from the API
     this.apiService.getFormattedLibraryItems().subscribe({
       next: (response: LibraryItem[]) => {
-        // Update the library subject
-        this.librarySubject.next(response);
+        // Parse images and update the library subject
+        const parsedResponse = response.map((item) => ({
+          ...item,
+          images: typeof item.images === 'string' ? JSON.parse(item.images) : item.images,
+        }));
+        this.librarySubject.next(parsedResponse);
       },
       error: (error: HttpErrorResponse) => {
         // Handle the error
@@ -69,8 +71,12 @@ export class LibraryService {
       // Get the library items
       switchMap(() => this.apiService.getLibraryItems()),
       tap((libraryItems) => {
-        // Update the library
-        this.librarySubject.next([...libraryItems]);
+        // Parse images and update the library
+        const parsedLibraryItems = libraryItems.map((item) => ({
+          ...item,
+          images: typeof item.images === 'string' ? JSON.parse(item.images) : item.images,
+        }));
+        this.librarySubject.next(parsedLibraryItems);
       }),
       catchError((error: HttpErrorResponse) => {
         // Handle the error
@@ -83,21 +89,27 @@ export class LibraryService {
 
   // Function to remove item from library
   removeLibraryItem(id: string): Observable<LibraryItem[]> {
-    // Remove the item from the library
     return this.apiService.removeLibraryItem(id).pipe(
-      // Get the library items
       switchMap((response) => {
-        // Return the library items
         return this.apiService.getLibraryItems();
       }),
       tap((libraryItems) => {
-        // Update the library
-        this.librarySubject.next([...libraryItems]);
+        // Check if libraryItems is an array
+        if (Array.isArray(libraryItems)) {
+          // Parse images and update the library
+          const parsedLibraryItems = libraryItems.map((item) => ({
+            ...item,
+            images: typeof item.images === 'string' ? JSON.parse(item.images) : item.images,
+          }));
+          this.librarySubject.next(parsedLibraryItems);
+        } else {
+          // Handle the case where libraryItems is not an array
+          this.librarySubject.next([]);
+        }
       }),
       catchError((error: HttpErrorResponse) => {
-        // Handle the error
-        console.error('Error removing library item:', error);
-        return throwError(() => new Error(`Failed to remove library item: ${error.error.message}`));
+        console.error('Une erreur s\'est produite lors de la suppression de l\'élément de la bibliothèque:', error);
+        return throwError(() => new Error(`Une erreur s\'est produite lors de la suppression de l\'élément de la bibliothèque: ${error.error.message}`));
       })
     );
   }

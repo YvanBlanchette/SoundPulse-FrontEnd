@@ -97,7 +97,13 @@ export class ApiService {
 
   // Function to get library items (GET request)
   getLibraryItems(): Observable<LibraryItem[]> {
-    return this.apiCall<LibraryItem[]>('GET', 'library');
+    return this.apiCall<LibraryItem[] | { message: string }>('GET', 'library').pipe(
+      map((response) => Array.isArray(response) ? response : []),
+      catchError((error: any) => {
+        console.error('Error fetching library items:', error);
+        return of([]);
+      })
+    );
   }
 
 

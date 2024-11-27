@@ -1,6 +1,7 @@
 # Soundpulse
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.10.
+1. Configurer la base de données:
+
 
 ## Development server
 

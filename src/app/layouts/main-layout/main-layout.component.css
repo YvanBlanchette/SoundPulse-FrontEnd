@@ -7,16 +7,16 @@
 }
 
 .mat-sidenav.sidenav-open {
-  @apply w-[24%] opacity-100;
+  @apply w-screen lg:w-[24%] opacity-100;
 }
 
 .mat-sidenav-content {
   @apply relative h-full bg-[#121213] text-gray-100 rounded-l-lg transition-all duration-300 overflow-hidden;
 }
 
-.mat-sidenav-content.sidenav-open {
-  @apply ml-[25%];
-}
+  .mat-sidenav-content.sidenav-open {
+    @apply lg:ml-[25%] lg:w-[75%] w-full;
+  }
 
 .mat-drawer-inner-container {
   overflow: hidden;

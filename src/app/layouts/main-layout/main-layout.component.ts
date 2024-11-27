@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { RouterOutlet } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DisclaimerComponent } from "../../components/_footer/disclaimer/disclaimer.component";
 
 @Component({
   selector: 'app-main-layout',
@@ -20,7 +21,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     SidebarComponent,
     MainComponent,
     FooterComponent,
-  ],
+    DisclaimerComponent
+],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.css']
 })

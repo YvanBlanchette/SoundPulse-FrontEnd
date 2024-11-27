@@ -1,8 +1,4 @@
 <div class="flex flex-col bg-[#121213] text-gray-100 overflow-auto h-[calc(100vh-305px)] pt-3">
-    @if(favouriteSongs) {
-      <app-library-item [item]="favouriteSongs![0]" />
-    }
-
   <!-- Show loading indicatior while fetching the library items -->
   @if(isLoading) {
     <div class="flex items-center justify-center gap-2 h-full text-gray-100 text-xl">
@@ -18,11 +14,19 @@
       {{ errorMessage }}</div>
   }
 
-  <!-- Show library items -->
-  @if(filteredLibraryItems) {
-    @for (item of filteredLibraryItems; track item.id) {
-      <app-library-item  [item]="item" />
-    }
+  <!-- If there is no items in the library -->
+  @if(!isLoading && !(filteredLibraryItems$ | async)?.length) {
+    <div class="w-full h-full flex justify-center items-center">
+      <p class="text-center text-gray-300/50">Commencez à ajouter des artistes, des albums ou des listes de lecture à votre bibliothèque!</p>
+    </div>
   }
 
+  <!-- Show library items -->
+  @if(!isLoading) {
+    <div *ngIf="filteredLibraryItems$ | async as items">
+      <div *ngFor="let item of filteredLibraryItems$ | async; trackBy: trackItem">
+        <app-library-item [item]="item" (removeItem)="removeItem($event)" />
+      </div>
+    </div>
+  }
 </div>
